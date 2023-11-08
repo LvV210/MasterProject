@@ -2,15 +2,23 @@ import pandas as pd
 
 
 def supergiant_stellar_parameters():
-    return pd.read_excel('SupergiantsSpectralParameters.xlsx', header=0, na_values=None)
+    return pd.read_excel('tables/SupergiantsSpectralParameters.xlsx', header=0, na_values=None)
 
 
 def HMXB_parameters():
-    return pd.read_excel('HMXBparameters.xlsx', header=0, na_values=None)
+    return pd.read_excel('tables/HMXBparameters.xlsx', header=0, na_values=None)
 
 
 def HMXB_parameters_Kaper():
-    return pd.read_excel('HMXBkaper.xlsx', header=0, na_values=None)
+    return pd.read_excel('tables/HMXBkaper.xlsx', header=0, na_values=None)
+
+
+def stellar_params():
+    return pd.read_excel('tables/StellarParam.xlsx', header=0, na_values=None)
+
+
+def photometric_params():
+    return pd.read_excel('tables/PhotometricParam.xlsx', header=0, na_values=None)
 
 
 def falenga():
