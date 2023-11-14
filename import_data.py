@@ -45,3 +45,7 @@ def falenga():
     df = pd.DataFrame([LMCx4, Cenx3, U1538, U1700, SMCx1, Velax1])
 
     return df
+
+
+def BailerJones():
+    return pd.read_csv('tables/BailerJonesDistances.csv', sep=',', header=0, na_values=None)

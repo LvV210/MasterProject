@@ -11,7 +11,7 @@ def scientific_notation(df: pd.DataFrame):
     return df
 
 
-def display_df(df2: pd.DataFrame):
+def display_df(df2: pd.DataFrame, scientific_notation: bool = True):
     """
     Displays a given dataframe in a nice way with better collumn names and units.
     """
@@ -41,13 +41,18 @@ def display_df(df2: pd.DataFrame):
                 "(B-V)0": r"$(B-V)_{0}$",
                 "BC": r"$BC_{v}$",
                 "mv": r"$m_{v}$",
-                "Teff": r"$T_{eff}[K]$"}
+                "Teff": r"$T_{eff}[K]$",
+                "Mv": r"$M_{v}$",
+                "log(g_spec)": r"$log(g_{spec})$",
+                "log(L/Lsun)": r"$log(\frac{L}{L_{\odot}}$",
+                "M_spec": r"$M_{spec}$"}
     
     # Rename columns
     df = df.rename(columns=columns)
 
     # Scientific notation
-    df = df.applymap(lambda x: "*" + "%.2E" % x if isinstance(x, (int, float, np.floating)) else x)
+    if scientific_notation:
+        df = df.applymap(lambda x: "*" + "%.2E" % x if isinstance(x, (int, float, np.floating)) else x)
 
     # To markdown
     markdown_text = df.to_markdown(index=False, tablefmt="pipe")
