@@ -11,7 +11,7 @@ def scientific_notation(df: pd.DataFrame):
     return df
 
 
-def display_df(df2: pd.DataFrame, scientific_notation: bool = True):
+def display_df(df2: pd.DataFrame, scientific_notation: bool = True, round: bool = False):
     """
     Displays a given dataframe in a nice way with better collumn names and units.
     """
@@ -53,6 +53,10 @@ def display_df(df2: pd.DataFrame, scientific_notation: bool = True):
     # Scientific notation
     if scientific_notation:
         df = df.applymap(lambda x: "*" + "%.2E" % x if isinstance(x, (int, float, np.floating)) else x)
+
+    # Round
+    if round:
+        df = df.applymap(lambda x: round(x, 1) if isinstance(x, (int, float, np.floating)) else x)
 
     # To markdown
     markdown_text = df.to_markdown(index=False, tablefmt="pipe")
