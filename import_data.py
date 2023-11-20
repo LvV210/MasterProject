@@ -48,4 +48,22 @@ def falenga():
 
 
 def BailerJones():
-    return pd.read_csv('tables/BailerJonesDistances.csv', sep=',', header=0, na_values=None)
+    """
+    Import distances to object from Bailer-Jones database
+    Change distances to LMC and SMC
+    """
+    # Import
+    BJ = pd.read_csv('tables/BailerJonesDistances.csv', sep=',', header=0, na_values=None)
+    ID = pd.read_excel('tables/id_converter.xlsx')
+    # Merge
+    BJ['source_id'] = BJ["source_id"].astype(np.int64)
+    ID['source_id'] = ID["source_id"].astype(np.int64)
+    BJ = pd.merge(ID, BJ, on='source_id')
+    BJ['source_id'] = BJ['source_id'].astype(str)
+
+    # Change distance to LMC and SMC
+    BJ.loc[BJ['id'] == 'SMC X-1', ['r_med_photogeo', 'r_med_geo']] = 64000
+    BJ.loc[BJ['id'] == 'LMC X-1', ['r_med_photogeo', 'r_med_geo']] = 50000
+    BJ.loc[BJ['id'] == 'LMC X-4', ['r_med_photogeo', 'r_med_geo']] = 50000
+
+    return BJ

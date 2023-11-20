@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from IPython.display import Markdown as md
 from tabulate import tabulate
+import re
 
 
 def scientific_notation(df: pd.DataFrame):
@@ -65,3 +66,51 @@ def display_df(df2: pd.DataFrame, scientific_notation: bool = True, round: bool 
     markdown_text = markdown_text.replace('*', '')
 
     return md(markdown_text)
+
+
+def decompose_spectral_type(input_str: str):
+    """
+    Need:
+        import re
+    Example usage:
+        spectral_type_input = "O6Ia+"
+        decompose_spectral_type(spectral_type_input)
+
+    """
+    # Define a regular expression pattern to match the spectral type
+    # The pattern consists of a letter (A to Z), optionally followed by a number and/or a luminosity class
+    pattern = re.compile(r'([A-Z]+)(\d*\.\d+|\d+)?([IV]+[+]?)?')
+
+    # Use the pattern to search for matches in the input string
+    match = pattern.search(input_str)
+
+    if match and 'Ia+' in input_str:
+        # Extract the spectral type, number, and luminosity class from the matched groups
+        spectral_type = f'{match.group(1)}{match.group(2)}'
+        luminosity_class = 'Ia+'
+        # Print the results
+        print("Spectral Type:", spectral_type)
+        print("Luminosity Class:", luminosity_class if luminosity_class else "N/A")
+
+    elif match and 'Ia' in input_str:
+        # Extract the spectral type, number, and luminosity class from the matched groups
+        spectral_type = f'{match.group(1)}{match.group(2)}'
+        luminosity_class = 'Ia'
+        # Print the results
+        print("Spectral Type:", spectral_type)
+        print("Luminosity Class:", luminosity_class if luminosity_class else "N/A")
+
+    elif match:
+        # Extract the spectral type, number, and luminosity class from the matched groups
+        spectral_type = f'{match.group(1)}{match.group(2)}'
+        luminosity_class = match.group(3)
+        # Print the results
+        print("Spectral Type:", spectral_type)
+        print("Luminosity Class:", luminosity_class if luminosity_class else "N/A")
+
+    else:
+        print("Invalid spectral type format.")
+        spectral_type = None
+        luminosity_class = None
+
+    return spectral_type, luminosity_class
