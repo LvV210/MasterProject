@@ -3,6 +3,8 @@ import numpy as np
 from IPython.display import Markdown as md
 from tabulate import tabulate
 import re
+from scipy.interpolate import interp1d
+import matplotlib.pyplot as plt
 
 
 def scientific_notation(df: pd.DataFrame):
@@ -89,28 +91,97 @@ def decompose_spectral_type(input_str: str):
         spectral_type = f'{match.group(1)}{match.group(2)}'
         luminosity_class = 'Ia+'
         # Print the results
-        print("Spectral Type:", spectral_type)
-        print("Luminosity Class:", luminosity_class if luminosity_class else "N/A")
+        # print("Spectral Type:", spectral_type)
+        # print("Luminosity Class:", luminosity_class if luminosity_class else "N/A")
 
     elif match and 'Ia' in input_str:
         # Extract the spectral type, number, and luminosity class from the matched groups
         spectral_type = f'{match.group(1)}{match.group(2)}'
         luminosity_class = 'Ia'
         # Print the results
-        print("Spectral Type:", spectral_type)
-        print("Luminosity Class:", luminosity_class if luminosity_class else "N/A")
+        # print("Spectral Type:", spectral_type)
+        # print("Luminosity Class:", luminosity_class if luminosity_class else "N/A")
 
     elif match:
         # Extract the spectral type, number, and luminosity class from the matched groups
         spectral_type = f'{match.group(1)}{match.group(2)}'
         luminosity_class = match.group(3)
         # Print the results
-        print("Spectral Type:", spectral_type)
-        print("Luminosity Class:", luminosity_class if luminosity_class else "N/A")
+        # print("Spectral Type:", spectral_type)
+        # print("Luminosity Class:", luminosity_class if luminosity_class else "N/A")
 
     else:
-        print("Invalid spectral type format.")
+        # print("Invalid spectral type format.")
         spectral_type = None
         luminosity_class = None
 
     return spectral_type, luminosity_class
+
+
+def extract_number_from_spectral_type(spectral_type):
+    pattern = re.compile(r'\d+(\.\d+)?')
+    match = pattern.search(spectral_type)
+    
+    if match and match.group() != '':
+        extracted_number = float(match.group())
+        
+        # Check if the spectral type starts with 'B' and add 10 to the extracted number
+        if spectral_type.startswith('B'):
+            extracted_number += 10.0
+            
+        return extracted_number
+    else:
+        return None
+
+
+def interpolate_value(spectral_type_values: list, spectral_type_numbers: list, target_number: float):
+    # Ensure the input lists are of the same length
+    if len(spectral_type_values) != len(spectral_type_numbers):
+        raise ValueError("Input lists must have the same length")
+
+    # Create an interpolation function
+    interpolate_func = interp1d(spectral_type_numbers, spectral_type_values, kind='linear', fill_value='extrapolate')
+
+    # Use the interpolation function to get the value at the target number
+    interpolated_value = interpolate_func(target_number)
+
+    return interpolated_value
+
+
+def interpolate(df2: pd.DataFrame, spectral_type: str, quantity: str, plot: bool = False):
+    """
+    
+    """
+    # Make sure we don't change the input dataframe
+    df = df2.copy()
+
+    # Get the short spectral type and luminosity class
+    spectral_type_short, luminosity_class = decompose_spectral_type(spectral_type)
+
+    # Make a new column with luminosity class
+    df['luminosity_class'] = df['ST'].apply(decompose_spectral_type).apply(lambda x: x[1])
+
+    # If luminosity class equals Ia or Ia+, then set it to I
+    if luminosity_class == 'Ia' or 'Ia+':
+        luminosity_class = 'I'
+
+    # Filter dataframe for luminosity class
+    df = df[df['ST'].str.contains('O')].loc[df['luminosity_class'] == luminosity_class].reset_index(drop=True)
+
+    # Data for the given quantity
+    spectral_type_numbers = df['ST'].apply(extract_number_from_spectral_type).tolist()
+    quantity_values = df[quantity].tolist()
+
+    # Interpolate
+    target_number = extract_number_from_spectral_type(spectral_type_short)
+    interpolated_value = interpolate_value(spectral_type_values=quantity_values, spectral_type_numbers=spectral_type_numbers, target_number=target_number)
+
+    if plot:
+        plt.plot(spectral_type_numbers, quantity_values, color='blue')
+        plt.scatter([target_number], [interpolated_value], color='orange')
+        plt.ylabel(quantity)
+        plt.xlabel('Spectral type')
+        plt.grid(True)
+        plt.show()
+
+    return interpolated_value
