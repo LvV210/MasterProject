@@ -1,2 +1,5 @@
 # Ignore html files
 *.html
+
+# Ignore the evolutionary tracks data
+evolutionary_tracks/
