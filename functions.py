@@ -5,6 +5,9 @@ from tabulate import tabulate
 import re
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
+import tarfile
+import os
+
 
 
 def scientific_notation(df: pd.DataFrame):
@@ -185,3 +188,71 @@ def interpolate(df2: pd.DataFrame, spectral_type: str, quantity: str, plot: bool
         plt.show()
 
     return interpolated_value
+
+
+def evolutionary_track(Z: float, Y: float, M: str, plot_all: bool = False, plot_single: bool = False):
+    """
+    
+    """
+    
+    # Folder path to the data extracted from .gz.tar file
+    folder_path = f'evolutionary_tracks/extract/Z{Z}Y{Y}/'
+    # Specify the path to your tar.gz file
+    file_path = f'evolutionary_tracks/Z{Z}Y{Y}.tar.gz'
+
+    if os.path.exists(folder_path) and os.path.isdir(folder_path):
+        print(f"Folder |{folder_path}| already exists.")
+    else:
+        print(f"Extracting files from {folder_path}...")
+        # Open the tar.gz file for reading
+        with tarfile.open(file_path, 'r:gz') as tar:
+            # Extract all contents to a specific directory (optional)
+            tar.extractall(path='evolutionary_tracks/extract')
+
+            # List the contents of the tar.gz file
+            file_names = tar.getnames()
+            print(f"LOADED contents of {file_path}.")
+
+
+    # List all files in the folder
+    file_names = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f)) and 'ADD' not in f and '.HB' not in f]
+
+    # Plot evolutionary track of all stars
+    if plot_all:
+        plt.figure()
+        for file_name in file_names:
+            df_evolutionary_track = pd.read_csv(f'evolutionary_tracks/extract/Z{Z}Y{Y}/{file_name}', delim_whitespace=True)
+
+            logL = df_evolutionary_track["LOG_L"].tolist()
+            logT = df_evolutionary_track["LOG_TE"].tolist()
+
+            logL = [float(x) for x in logL]
+            logT = [float(x) for x in logT]
+
+            plt.plot(logT, logL)
+
+        plt.grid(True)
+        plt.title(f"All evolutionary tracks for Z={Z}, Y={Y}, M={float(M)}"+ r"$M_{\odot}$")
+        plt.gca().invert_xaxis()
+        plt.show()
+
+    # Evolutionary track of a single star of mass M
+    df_evolutionary_track = pd.read_csv(f'evolutionary_tracks/extract/Z{Z}Y{Y}/Z{Z}Y{Y}OUTA1.74_F7_M{M}.DAT', delim_whitespace=True)
+    if plot_single:
+
+        logL = df_evolutionary_track["LOG_L"].tolist()
+        logT = df_evolutionary_track["LOG_TE"].tolist()
+
+        logL = [float(x) for x in logL]
+        logT = [float(x) for x in logT]
+
+        plt.figure()
+        plt.title(f"Evolutionary tracks for Z={Z}, Y={Y}, M={float(M)}"+ r"$M_{\odot}$")
+        plt.xlabel(r"$log(T_{eff})$")
+        plt.ylabel(r"$log(\frac{L}{L_{\odot}})$")
+        plt.plot(logT, logL)
+        plt.grid(True)
+        plt.gca().invert_xaxis()
+        plt.show()
+    
+    return df_evolutionary_track
