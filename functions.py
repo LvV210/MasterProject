@@ -247,7 +247,7 @@ def evolutionary_track(Z: float, Y: float, M: str, plot_all: bool = False, plot_
         logT = [float(x) for x in logT]
 
         plt.figure()
-        plt.title(f"Evolutionary tracks for Z={Z}, Y={Y}, M={float(M)}"+ r"$M_{\odot}$")
+        plt.title(f"Evolutionary track for Z={Z}, Y={Y}, M={float(M)}"+ r"$M_{\odot}$")
         plt.xlabel(r"$log(T_{eff})$")
         plt.ylabel(r"$log(\frac{L}{L_{\odot}})$")
         plt.plot(logT, logL)
@@ -256,3 +256,65 @@ def evolutionary_track(Z: float, Y: float, M: str, plot_all: bool = False, plot_
         plt.show()
     
     return df_evolutionary_track
+
+
+def end_main_sequence(lst: list):
+    """
+    Finds where the first 0 value is in a list
+    """
+    for i, value in enumerate(lst):
+        if value == 0:
+            return i
+    return None
+
+
+def find_ZAMS_index(H: list):
+    """
+    Find the index where the Zero Age Main-Sequence is in the evolutionary track.
+    The ZAMS is where the hydrogen fraction in the core starts to decrease i.e. hydrogen burning has started.
+
+
+    Args:
+        H (list): Hydrogen fraction as function of time
+
+    Returns:
+        [int]: Index of start ZAMS
+    """
+    H_start = H[0]
+    for i in range(1, len(H)):
+        if H[i] < (H_start - 0.01):
+            return i - 1
+    return -1  # If the list is entirely non-decreasing
+
+
+def ZAMS(Z: float, Y: float):
+    """
+    Find the ZAMS, based on the start of hydrogen burning in the core for the different stellar masses
+
+    Args:
+        Z (float): Metallicity
+        Y (float): Helium fraction
+
+    Returns:
+        L_ZAMS (list): List of log(L) values for the ZAMS
+        T_ZAMS (list): List of log(T) values for the ZAMS
+    """
+    # List to save ZAMS
+    L_ZAMS = []
+    T_ZAMS = []
+
+    # List for all masses to calc ZAMS for
+    M_values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 30, 35, 40, 50, 55, 60, 65, 70, 80, 100, 120, 150]
+    M_values = ['{:07.3f}'.format(m) for m in M_values]
+
+    for M in M_values:
+        df = evolutionary_track(Z=Z, Y=Y, M=M)
+
+        ZAMS_index = find_ZAMS_index(df['H_CEN'].tolist())
+        logL = df["LOG_L"].tolist()[ZAMS_index]
+        logT = df["LOG_TE"].tolist()[ZAMS_index]
+
+        L_ZAMS.append(logL)
+        T_ZAMS.append(logT)
+
+    return L_ZAMS, T_ZAMS
