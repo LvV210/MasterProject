@@ -165,7 +165,7 @@ def interpolate(df2: pd.DataFrame, spectral_type: str, quantity: str, plot: bool
     df['luminosity_class'] = df['ST'].apply(decompose_spectral_type).apply(lambda x: x[1])
 
     # If luminosity class equals Ia or Ia+, then set it to I
-    if luminosity_class == 'Ia' or 'Ia+':
+    if luminosity_class == 'Ia' or 'Ia+' or 'Ib' or 'Ib+':
         luminosity_class = 'I'
 
     # Filter dataframe for luminosity class

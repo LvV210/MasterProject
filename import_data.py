@@ -52,7 +52,7 @@ def falenga():
              "i": 65,
              "i_err": 1,
              "M_opt": 24,
-             "M_err": 1}
+             "M_opt_err": 1}
     U1700 = {"id": "4U1700-37",
              "semi_eclipse_angle": 32,
              "semi_eclipse_angle _err": 1,
@@ -89,8 +89,44 @@ def falenga():
               "i_err": 0.4,
               "M_opt": 26,
               "M_opt_err": 1}
+    SAX =   {"id": "IGR J18027−2016",
+              "semi_eclipse_angle": 31,
+              "semi_eclipse_angle _err": 2,
+              "a": 33,
+              "a_err": 1,
+              "i": 72,
+              "i_err": 2,
+              "M_opt": 22,
+              "M_opt_err": 2}
+    XTE =   {"id": "XTE J1855-026",
+              "semi_eclipse_angle": 32,
+              "semi_eclipse_angle _err": 1,
+              "a": 40,
+              "a_err": 1,
+              "i": 71,
+              "i_err": 2,
+              "M_opt": 21,
+              "M_opt_err": 2}
+    EXO =   {"id": "EXO 1722-363",
+              "semi_eclipse_angle": 26,
+              "semi_eclipse_angle _err": 4,
+              "a": 52,
+              "a_err": 2,
+              "i": 68,
+              "i_err": 2,
+              "M_opt": 18,
+              "M_opt_err": 2}
+    OAO =   {"id": "OAO 1657-415",
+              "semi_eclipse_angle": 20.9,
+              "semi_eclipse_angle _err": 0.4,
+              "a": 51.3,
+              "a_err": 0.8,
+              "i": 67.9,
+              "i_err": 0.9,
+              "M_opt": 17.5,
+              "M_opt_err": 0.8}
 
-    df = pd.DataFrame([LMCx4, Cenx3, U1538, U1700, SMCx1, Velax1])
+    df = pd.DataFrame([LMCx4, Cenx3, U1538, U1700, SMCx1, Velax1, SAX, XTE, EXO, OAO])
 
     return df
 
