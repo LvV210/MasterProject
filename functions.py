@@ -318,3 +318,12 @@ def ZAMS(Z: float, Y: float):
         T_ZAMS.append(logT)
 
     return L_ZAMS, T_ZAMS
+
+
+def time_intervals(start_point, N_iterations, N_intervals):
+    # Define the range and number of intervals
+    # Calculate the step size
+    step_size = (N_iterations - start_point) / (N_intervals - 1)
+    # Generate the list of equally spaced numbers
+    equally_spaced_numbers = [round((start_point + i * step_size - 1), 0) for i in range(N_intervals)]
+    return equally_spaced_numbers
