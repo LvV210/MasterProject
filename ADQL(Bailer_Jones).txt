@@ -1,0 +1,46 @@
+Link to querry form: https://dc.zah.uni-heidelberg.de/__system__/adql/query/form
+
+Link to Bailer-Jones parameters explenation: http://dc.g-vo.org/tableinfo/gedr3dist.main
+
+
+ADQL:
+SELECT source_id, ra, ra_error, dec_error, dec, r_med_geo, r_lo_geo, r_hi_geo, r_med_photogeo, r_lo_photogeo, r_hi_photogeo, flag
+FROM gedr3dist.main
+JOIN gaia.edr3lite
+USING(source_id)
+WHERE source_id = ######
+
+
+For objects from Kaper et. al:
+WHERE source_id IN (
+    '524924310153249920',
+    '4686397666038575104',
+    '4660300345280168192',
+    '5620657678322625920',
+    '5337498593446516480',
+    '6054569565614460800',
+    '5886085557746480000',
+    '5976382915813535232',
+    '4309225217336733824',
+    '4657637156283982336',
+    '2059383668236814720'
+)
+
+For objects from Falenga et. al added:
+WHERE source_id IN (
+    '524924310153249920',
+    '4686397666038575104',
+    '4660300345280168192',
+    '5620657678322625920',
+    '5337498593446516480',
+    '6054569565614460800',
+    '5886085557746480000',
+    '5976382915813535232',
+    '4309225217336733824',
+    '4657637156283982336',
+    '2059383668236814720',
+    '4255891924062617088',
+    '4070968778552176768',
+    '5966391894137386240'
+)
+
