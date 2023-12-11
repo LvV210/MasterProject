@@ -3,11 +3,13 @@ import numpy as np
 from IPython.display import Markdown as md
 from tabulate import tabulate
 import re
+import math
+from astropy.constants import R_sun, L_sun, sigma_sb
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 import tarfile
 import os
-
+import sympy as sp
 
 
 def scientific_notation(df: pd.DataFrame):
@@ -80,7 +82,6 @@ def decompose_spectral_type(input_str: str):
     Example usage:
         spectral_type_input = "O6Ia+"
         decompose_spectral_type(spectral_type_input)
-
     """
     # Define a regular expression pattern to match the spectral type
     # The pattern consists of a letter (A to Z), optionally followed by a number and/or a luminosity class
@@ -327,3 +328,142 @@ def time_intervals(start_point, N_iterations, N_intervals):
     # Generate the list of equally spaced numbers
     equally_spaced_numbers = [round((start_point + i * step_size - 1), 0) for i in range(N_intervals)]
     return equally_spaced_numbers
+
+
+"""
+ERROR ANALYSIS
+"""
+def extinction_and_error(Rh_, SigmaRh_, JHobs_, SigmaJHobs_, JH0_, SigmaJH0_):
+    # Define the symbols
+    Rh, SigmaRh, JHobs, SigmaJHobs, JH0, SigmaJH0 = sp.symbols('Rh SigmaRv JHobs SigmaJHobs JH0 SigmaJH0')
+
+    # Define the function
+    Ah = Rh * (JHobs - JH0)
+
+    # Calculate the partial derivatives
+    partial_derivative_Rh = sp.diff(Ah, Rh)
+    partial_derivative_JHobs = sp.diff(Ah, JHobs)
+    partial_derivative_JH0 = sp.diff(Ah, JH0)
+
+    # Calculate the error expression
+    error_Ah = sp.sqrt(
+        (partial_derivative_Rh * SigmaRh)**2 +
+        (partial_derivative_JHobs * SigmaJHobs)**2 +
+        (partial_derivative_JH0 * SigmaJH0)**2)
+    
+    # Substitute values
+    values = {
+        Rh: Rh_,
+        SigmaRh: SigmaRh_,
+        JHobs: JHobs_,
+        SigmaJHobs: SigmaJHobs_,
+        JH0: JH0_,
+        SigmaJH0: SigmaJH0_
+    }
+
+    Ah_value = Ah.subs(values).evalf()
+    Ah_error = error_Ah.subs(values).evalf()
+
+    return Ah_value, Ah_error
+
+
+def luminosity_error_function():
+    # Define the symbols
+    BCh, mh, d, Ah, SigmaBCh, Sigmad, Sigmamh, SigmaAh = sp.symbols(
+        'BCh mh d Ah SigmaBCh Sigmad Sigmamh SigmaAh'
+    )
+
+    # Define the function L
+    L = 10**(-0.4*(-4.74 + BCh + mh - Ah - (5*sp.log(d))/sp.log(10) + 5))
+
+    # Calculate the partial derivatives
+    partial_derivative_BCh = sp.diff(L, BCh)
+    partial_derivative_mh = sp.diff(L, mh)
+    partial_derivative_d = sp.diff(L, d)
+    partial_derivative_Ah = sp.diff(L, Ah)
+
+    # Calculate the error expression
+    error_L = sp.sqrt(
+        (partial_derivative_BCh * SigmaBCh)**2 +
+        (partial_derivative_mh * Sigmamh)**2 +
+        (partial_derivative_d * Sigmad)**2 +
+        (partial_derivative_Ah* SigmaAh)**2)
+
+    return error_L
+
+def luminosity_error(BCh_: float, SigmaBCh_: float, mh_: float, Sigmamh_: float, 
+                     d_: float, Sigmad_: float, Ah_: float, SigmaAh_: float):
+
+    # Calculate error function
+    error_L = luminosity_error_function()
+
+    # Define the symbols
+    BCh, mh, d, Ah, SigmaBCh, Sigmad, Sigmamh, SigmaAh = sp.symbols(
+        'BCh mh d Ah SigmaBCh Sigmad Sigmamh SigmaAh'
+    )
+
+    # Define the function L
+    L = 10**(-0.4*(-4.74 + BCh + mh - Ah - (5*sp.log(d))/sp.log(10) + 5))
+
+    # Substitute values
+    values = {
+        BCh: BCh_,
+        mh: mh_,
+        d: d_,
+        Ah: Ah_,
+        SigmaBCh: SigmaBCh_,
+        Sigmad: Sigmad_,
+        Sigmamh: Sigmamh_,
+        SigmaAh: SigmaAh_,
+    }
+
+    # Calculate the error expression with values substituted
+    error_L_with_values = error_L.subs(values)
+    # Calculate the numerical value
+    numerical_value_error_L = error_L_with_values.evalf()
+
+    return numerical_value_error_L
+
+def expected_radius_error(L_, SigmaL_, Teff_, SigmaTeff_):
+    # Define the symbols
+    L, SigmaL, Teff, SigmaTeff = sp.symbols('L SigmaL Teff SigmaTeff')
+
+    # Define the function
+    R = ((L_sun.value / R_sun.value**2) * (L / (4 * np.pi * sigma_sb.value * Teff**4)))**(1/2)
+
+    # Calculate the partial derivatives
+    partial_derivative_L = sp.diff(R, L)
+    partial_derivative_Teff = sp.diff(R, Teff)
+
+    # Calculate the error expression
+    error_R = sp.sqrt(
+        (partial_derivative_L * SigmaL)**2 +
+        (partial_derivative_Teff * SigmaTeff)**2)
+    
+    # Substitute values
+    values = {
+        L: L_,
+        SigmaL: SigmaL_,
+        Teff: Teff_,
+        SigmaTeff: SigmaTeff_
+    }
+
+    R_value = R.subs(values).evalf()
+    R_error = error_R.subs(values).evalf()
+
+    return R_value, R_error
+
+
+def Teff_error(ST):
+    # Decompose spectral type
+    spectral_type, luminosity_class = decompose_spectral_type(ST)
+    # If luminosity class equals Ia or Ia+, then set it to I
+    if luminosity_class == 'Ia' or 'Ia+' or 'Ib' or 'Ib+':
+        luminosity_class = 'I'
+    # Return appropriate error
+    if luminosity_class == 'I':
+        return 1446
+    elif luminosity_class == 'III':
+        return 529
+    elif luminosity_class == 'V':
+        return 1021
