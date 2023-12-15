@@ -424,6 +424,62 @@ def luminosity_error(BCh_: float, SigmaBCh_: float, mh_: float, Sigmamh_: float,
 
     return numerical_value_error_L
 
+
+def luminosity_error_asymmetric(BCh_: float, SigmaBCh_: float, mh_: float, Sigmamh_: float, 
+                     d_: float, Sigmad_plus: float, Sigmad_minus: float, Ah_: float, SigmaAh_: float):
+
+    # Define the symbols
+    BCh, mh, d, Ah, SigmaBCh, Sigmadplus, Sigmadminus, Sigmamh, SigmaAh = sp.symbols(
+        'BCh mh d Ah SigmaBCh Sigmad Sigmadplus Sigmadminus Sigmamh SigmaAh'
+    )
+
+    # Define the function L
+    L = 10**(-0.4*(-4.74 + BCh + mh - Ah - (5*sp.log(d))/sp.log(10) + 5))
+
+    # Calculate the partial derivatives
+    partial_derivative_BCh = sp.diff(L, BCh)
+    partial_derivative_mh = sp.diff(L, mh)
+    partial_derivative_d = sp.diff(L, d)
+    partial_derivative_Ah = sp.diff(L, Ah)
+
+    # Calculate the error expression
+    error_L_plus = sp.sqrt(
+        (partial_derivative_BCh * SigmaBCh)**2 +
+        (partial_derivative_mh * Sigmamh)**2 +
+        (partial_derivative_d * Sigmadplus)**2 +
+        (partial_derivative_Ah * SigmaAh)**2)
+
+    # Calculate the error expression
+    error_L_minus = sp.sqrt(
+        (partial_derivative_BCh * SigmaBCh)**2 +
+        (partial_derivative_mh * Sigmamh)**2 +
+        (partial_derivative_d * Sigmadminus)**2 +
+        (partial_derivative_Ah * SigmaAh)**2)
+
+    # Substitute values
+    values = {
+        BCh: BCh_,
+        mh: mh_,
+        d: d_,
+        Ah: Ah_,
+        SigmaBCh: SigmaBCh_,
+        Sigmadplus: Sigmad_plus,
+        Sigmadminus: Sigmad_minus,
+        Sigmamh: Sigmamh_,
+        SigmaAh: SigmaAh_,
+    }
+
+    # Calculate the error expression with values substituted
+    error_L_with_values_plus = error_L_plus.subs(values)
+    error_L_with_values_minus = error_L_minus.subs(values)
+    # Calculate the numerical value
+    numerical_value_error_L_plus = error_L_with_values_plus.evalf()
+    numerical_value_error_L_minus = error_L_with_values_minus.evalf()
+
+    return numerical_value_error_L_minus, numerical_value_error_L_plus
+
+
+
 def expected_radius_error(L_, SigmaL_, Teff_, SigmaTeff_):
     # Define the symbols
     L, SigmaL, Teff, SigmaTeff = sp.symbols('L SigmaL Teff SigmaTeff')
