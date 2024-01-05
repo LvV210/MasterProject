@@ -186,8 +186,16 @@ def BailerJones():
     BJ['source_id'] = BJ['source_id'].astype(str)
 
     # Change distance to LMC and SMC
-    BJ.loc[BJ['id'] == 'SMC X-1', ['r_med_photogeo', 'r_med_geo']] = 64000
-    BJ.loc[BJ['id'] == 'LMC X-1', ['r_med_photogeo', 'r_med_geo']] = 50000
-    BJ.loc[BJ['id'] == 'LMC X-4', ['r_med_photogeo', 'r_med_geo']] = 50000
+    BJ.loc[BJ['id'] == 'SMC X-1', ['r_med_photogeo', 'r_med_geo']] = 62440
+    BJ.loc[BJ['id'] == 'SMC X-1', ['r_lo_photogeo', 'r_lo_geo']] = 58440
+    BJ.loc[BJ['id'] == 'SMC X-1', ['r_hi_photogeo', 'r_hi_geo']] = 62440
+
+    BJ.loc[BJ['id'] == 'LMC X-1', ['r_med_photogeo', 'r_med_geo']] = 48590
+    BJ.loc[BJ['id'] == 'LMC X-1', ['r_lo_photogeo', 'r_lo_geo']] = 44590
+    BJ.loc[BJ['id'] == 'LMC X-1', ['r_hi_photogeo', 'r_hi_geo']] = 52590
+
+    BJ.loc[BJ['id'] == 'LMC X-4', ['r_med_photogeo', 'r_med_geo']] = 48590
+    BJ.loc[BJ['id'] == 'LMC X-4', ['r_lo_photogeo', 'r_lo_geo']] = 44590
+    BJ.loc[BJ['id'] == 'LMC X-4', ['r_hi_photogeo', 'r_hi_geo']] = 52590
 
     return BJ
