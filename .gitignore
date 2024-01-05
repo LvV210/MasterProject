@@ -3,3 +3,6 @@
 
 # Ignore the evolutionary tracks data
 evolutionary_tracks/
+
+# Ignore pycache
+__pycache__
