@@ -430,7 +430,7 @@ def luminosity_error_asymmetric(BCh_: float, SigmaBCh_: float, mh_: float, Sigma
 
     # Define the symbols
     BCh, mh, d, Ah, SigmaBCh, Sigmadplus, Sigmadminus, Sigmamh, SigmaAh = sp.symbols(
-        'BCh mh d Ah SigmaBCh Sigmad Sigmadplus Sigmadminus Sigmamh SigmaAh'
+        'BCh mh d Ah SigmaBCh Sigmadplus Sigmadminus Sigmamh SigmaAh'
     )
 
     # Define the function L
@@ -480,6 +480,41 @@ def luminosity_error_asymmetric(BCh_: float, SigmaBCh_: float, mh_: float, Sigma
 
 
 
+def expected_radius_error_asymmetric(L_, SigmaL_plus, SigmaL_minus, Teff_, SigmaTeff_):
+    # Define the symbols
+    L, SigmaLplus, SigmaLminus, Teff, SigmaTeff = sp.symbols('L SigmaLplus SigmaLminus Teff SigmaTeff')
+
+    # Define the function
+    R = ((L_sun.value / R_sun.value**2) * (L / (4 * np.pi * sigma_sb.value * Teff**4)))**(1/2)
+
+    # Calculate the partial derivatives
+    partial_derivative_L = sp.diff(R, L)
+    partial_derivative_Teff = sp.diff(R, Teff)
+
+    # Calculate the error expression
+    error_R_plus = sp.sqrt(
+        (partial_derivative_L * SigmaLplus)**2 +
+        (partial_derivative_Teff * SigmaTeff)**2)
+
+    error_R_minus = sp.sqrt(
+        (partial_derivative_L * SigmaLminus)**2 +
+        (partial_derivative_Teff * SigmaTeff)**2)
+    
+    # Substitute values
+    values = {
+        L: L_,
+        SigmaLplus: SigmaL_plus,
+        SigmaLminus: SigmaL_minus,
+        Teff: Teff_,
+        SigmaTeff: SigmaTeff_
+    }
+
+    R_value = R.subs(values).evalf()
+    R_error_plus = error_R_plus.subs(values).evalf()
+    R_error_minus = error_R_minus.subs(values).evalf()
+
+    return R_value, R_error_plus, R_error_minus
+
 def expected_radius_error(L_, SigmaL_, Teff_, SigmaTeff_):
     # Define the symbols
     L, SigmaL, Teff, SigmaTeff = sp.symbols('L SigmaL Teff SigmaTeff')
@@ -508,7 +543,6 @@ def expected_radius_error(L_, SigmaL_, Teff_, SigmaTeff_):
     R_error = error_R.subs(values).evalf()
 
     return R_value, R_error
-
 
 def Teff_error(ST):
     # Decompose spectral type
