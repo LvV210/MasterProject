@@ -1,0 +1,43 @@
+This file contains an overview of the structure and content of your download request from the ESO Science Archive.
+
+
+For every downloaded dataset, files are listed below with the following structure:
+
+dataset_name
+        - archive_file_name (technical name, as saved on disk)	original_file_name (user name, contains relevant information) category size
+
+
+Please note that, depending on your operating system and method of download, at download time the colons (:) in the archive_file_name as listed below may be replaced by underscores (_).
+
+
+In order to rename the files on disk from the technical archive_file_name to the more meaningful original_file_name, run the following shell command:
+    cat THIS_FILE | awk '$2 ~ /^ADP/ {print "test -f",$2,"&& mv",$2,$3}' | sh
+
+
+In case you have requested cutouts, the file name on disk contains the TARGET name that you have provided as input. To order files by it when listing them, run the following shell command:
+    cat THIS_FILE | awk '$2 ~ /^ADP/ {print $2}' | sort -t_ -k3,3
+
+
+Your feedback regarding the data quality of the downloaded data products is greatly appreciated. Please contact the ESO Archive Science Group via https://support.eso.org/ , subject: Phase 3 ... thanks!
+
+The download includes contributions from the following collections:
+Ref(0)	UVES	https://doi.eso.org/10.18727/archive/50	IDP_UVES_ECH_release_description_v3.1_2023-01-09.pdf	https://www.eso.org/rm/api/v1/public/releaseDescriptions/163
+
+Publications based on observations collected at ESO telescopes must acknowledge this fact (please see: http://archive.eso.org/cms/eso-data-access-policy.html#acknowledgement). In particular, please include a reference to the corresponding DOI(s). They are listed in the third column in the table above and referenced below for each dataset. The following shell command lists them:
+
+	cat THIS_FILE | awk -F/ '$1 ~ /^Ref\(/ {print $0,$NF}' | awk '{print $2, $3}' | sort | uniq
+
+
+Each collection is described in detail in the corresponding Release Description. They can be downloaded with the following shell command:
+
+	cat THIS_FILE | awk -F/ '$1 ~ /^Ref\(/ {print $0,$NF}' | awk '{printf("curl -o %s_%s %s\n", $6, $4, $5)}' | sh
+
+ADP.2020-06-19T07:46:26.479 Ref(0)
+	- ADP.2020-06-19T07:46:26.479.fits	UV_SFLX_462231_2010-04-11T04:40:56.741_RED564d1_1x1_08.fits	SCIENCE.SPECTRUM	3859200
+	- ADP.2020-06-19T07:46:26.481.fits	UV_S2DX_462231_2010-04-11T04:40:56.741_REDU564d1_1x1_08.fits	ANCILLARY.2DSPECTRUM	14460480
+	- ADP.2020-06-19T07:46:26.480.fits	UV_S2DX_462231_2010-04-11T04:40:56.741_REDL564d1_1x1_08.fits	ANCILLARY.2DSPECTRUM	17838720
+	- ADP.2020-06-19T07:46:26.482.png	r.UVES.2010-04-11T04:40:56.741_0000.fits_1.png	ANCILLARY.PREVIEW	100619
+ADP.2020-06-19T07:46:26.470 Ref(0)
+	- ADP.2020-06-19T07:46:26.470.fits	UV_SFLX_462231_2010-04-11T04:41:00.641_BLU390d1_1x1_08.fits	SCIENCE.SPECTRUM	2707200
+	- ADP.2020-06-19T07:46:26.472.png	r.UVES.2010-04-11T04:41:00.641_0000.fits_1.png	ANCILLARY.PREVIEW	111257
+	- ADP.2020-06-19T07:46:26.471.fits	UV_S2DX_462231_2010-04-11T04:41:00.641_BLUE390d1_1x1_08.fits	ANCILLARY.2DSPECTRUM	11381760

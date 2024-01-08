@@ -3,3 +3,9 @@
 
 # Ignore the evolutionary tracks data
 evolutionary_tracks/
+
+# Ignore just trying codes
+JustTrying/
+
+# Ignore pycache
+__pycache__/

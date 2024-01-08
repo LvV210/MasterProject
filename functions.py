@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import tarfile
 import os
 import sympy as sp
+import subprocess
+
 
 
 def scientific_notation(df: pd.DataFrame):
@@ -197,9 +199,9 @@ def evolutionary_track(Z: float, Y: float, M: str, plot_all: bool = False, plot_
     """
     
     # Folder path to the data extracted from .gz.tar file
-    folder_path = f'evolutionary_tracks/extract/Z{Z}Y{Y}/'
+    folder_path = f'../evolutionary_tracks/extract/Z{Z}Y{Y}/'
     # Specify the path to your tar.gz file
-    file_path = f'evolutionary_tracks/Z{Z}Y{Y}.tar.gz'
+    file_path = f'../evolutionary_tracks/Z{Z}Y{Y}.tar.gz'
 
     if os.path.exists(folder_path) and os.path.isdir(folder_path):
         print(f"Folder |{folder_path}| already exists.")
@@ -208,7 +210,7 @@ def evolutionary_track(Z: float, Y: float, M: str, plot_all: bool = False, plot_
         # Open the tar.gz file for reading
         with tarfile.open(file_path, 'r:gz') as tar:
             # Extract all contents to a specific directory (optional)
-            tar.extractall(path='evolutionary_tracks/extract')
+            tar.extractall(path='../evolutionary_tracks/extract')
 
             # List the contents of the tar.gz file
             file_names = tar.getnames()
@@ -222,7 +224,7 @@ def evolutionary_track(Z: float, Y: float, M: str, plot_all: bool = False, plot_
     if plot_all:
         plt.figure()
         for file_name in file_names:
-            df_evolutionary_track = pd.read_csv(f'evolutionary_tracks/extract/Z{Z}Y{Y}/{file_name}', delim_whitespace=True)
+            df_evolutionary_track = pd.read_csv(f'../evolutionary_tracks/extract/Z{Z}Y{Y}/{file_name}', delim_whitespace=True)
 
             logL = df_evolutionary_track["LOG_L"].tolist()
             logT = df_evolutionary_track["LOG_TE"].tolist()
@@ -238,7 +240,7 @@ def evolutionary_track(Z: float, Y: float, M: str, plot_all: bool = False, plot_
         plt.show()
 
     # Evolutionary track of a single star of mass M
-    df_evolutionary_track = pd.read_csv(f'evolutionary_tracks/extract/Z{Z}Y{Y}/Z{Z}Y{Y}OUTA1.74_F7_M{M}.DAT', delim_whitespace=True)
+    df_evolutionary_track = pd.read_csv(f'../evolutionary_tracks/extract/Z{Z}Y{Y}/Z{Z}Y{Y}OUTA1.74_F7_M{M}.DAT', delim_whitespace=True)
     if plot_single:
 
         logL = df_evolutionary_track["LOG_L"].tolist()
