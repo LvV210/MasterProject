@@ -9,3 +9,6 @@ JustTrying/
 
 # Ignore pycache
 __pycache__/
+
+# Ignore spectra files
+Spectra/
