@@ -11,6 +11,7 @@ import tarfile
 import os
 import sympy as sp
 import subprocess
+from astropy.io import fits
 
 
 
@@ -559,3 +560,146 @@ def Teff_error(ST):
         return 529
     elif luminosity_class == 'V':
         return 1021
+    
+
+
+
+
+
+
+"""
+UVES spectra analysis
+"""
+def extract_spectrum_within_range(wavelengths, flux, start_wavelength, end_wavelength):
+    """
+    Extract wavelength and flux values within a given range.
+
+    Parameters:
+    - wavelengths: List or array of wavelength values.
+    - flux: List or array of flux values.
+    - start_wavelength: Lower bound of the wavelength range.
+    - end_wavelength: Upper bound of the wavelength range.
+
+    Returns:
+    - extracted_wavelengths: Wavelength values within the specified range.
+    - extracted_flux: Flux values corresponding to the selected wavelengths.
+    """
+
+    # Find indices corresponding to the specified wavelength range
+    indices = np.where((wavelengths >= start_wavelength) & (wavelengths <= end_wavelength))[0]
+
+    # Extract wavelength and flux values within the range
+    extracted_wavelengths = wavelengths[indices]
+    extracted_flux = flux[indices]
+
+    return extracted_wavelengths, extracted_flux
+
+
+
+def divide_colormap(num_parts, colormap_name='rainbow'):
+    cmap = plt.get_cmap(colormap_name)
+    num_colors = cmap.N
+    colors = [cmap(i / num_colors) for i in range(0, num_colors, num_colors // num_parts)]
+    return colors
+
+
+
+def import_spectra(object: str):
+
+    # Path to root folder
+    folder_path = f"../Spectra/{object}/"
+
+    # Get a list of all files in the folder
+    all_files = os.listdir(folder_path)
+
+    # Filter files that start with "ADP"
+    adp_files = [file for file in all_files if file.startswith("ADP")]
+
+    # Gather the spectra
+    spectra = []
+    for file in adp_files:
+        data = fits.getdata(folder_path + file)
+        wavelength = data['WAVE'][0]
+        flux = data['FLUX'][0]
+        spectra.append((wavelength, flux))
+
+    return spectra
+
+
+
+def plot_spectrum(object: str):
+
+    # Import spectra
+    spectra = import_spectra(object)
+
+    # Spectral lines and wavelengths in angstrom
+    spectral_lines = [
+        (4026, "HeI+II 4026"),
+        (4200, "HeII 4200"),
+        (4686, "HeII 4686"),
+        (4634, "NIII 4634-40-42 (emission)"),
+        (4144, "HeI 4144"),
+        (4388, "HeI 4388"),
+        (4542, "HeII 4542"),
+        (4552, "SiII 4552"),
+        (4686, "HeII 4686"),
+        (4861, "Hb 4861"),
+        (5016, "HeI 5016"),
+        (5876, "HeI 5876"),
+        (5890, "NaI 5890"),
+        (5896, "NaI 5896"),
+        (6527, "HeII 6527"),
+        (6563, "Ha 6563")
+    ]
+
+    spectral_lines = [
+        (4026, "He I + II 4026"),
+        (4200, "He II 4200"),
+        (4634, "N III 4634-40-42 (emission)"),
+        (4686, "He II 4686"),
+        (4144, "He I 4144"),
+        (4388, "He I 4388"),
+        (4541, "He II 4541"),
+        (4552, "Si II 4552"),
+        (4686, "He II 4686"),
+        (4861, "Hb 4861"),
+        (5016, "He I 5016"),
+        (5876, "He I 5876"),
+        (5890, "Na I 5890"),
+        (5896, "Na I 5896"),
+        (6527, "He II 6527"),
+        (6563, "Ha 6563"),
+        (4471, "He I 4471"),
+        (4058, "N IV 4058"),
+        (4116, "Si IV 4116"),
+        (4097, "N III 4097"),
+        (4504, "Si IV 4686-4504"),
+        (4713, "He I 4713"),
+        (4187, "C III 4187"),
+        (4121, "He I 4121"),
+        (3995, "N II 3995"),
+        (4350, "O II 4350"),
+        (4128, "Si I 4128-30"),
+        (4481, "Mg II 4481"),
+        (4233, "Fe II 4233"),
+    ]
+
+    colors = divide_colormap(len(spectral_lines))
+
+    # Plot the spectrum
+    plt.figure(figsize=(10, 5))
+    for spectrum in spectra:
+        plt.plot(spectrum[0], spectrum[1] / max(spectrum[1]))
+
+    # Plot wavelengths of spectral lines
+    for wavelength, label in spectral_lines:
+        plt.vlines(wavelength, -1000, 1000, label=label, color=colors[spectral_lines.index((wavelength, label))])
+
+    plt.xlabel('Wavelength (Angstroms)')
+    plt.ylabel('Flux')
+    plt.title(f'Spectrum {object}')
+    plt.ylim(0, 1.2)
+    plt.legend()
+    plt.show()
+
+    return
