@@ -78,6 +78,81 @@ def display_df(df2: pd.DataFrame, scientific_notation: bool = True, round: bool 
     return md(markdown_text)
 
 
+"""
+Extract numbers and errors from ##(##) notation
+"""
+def count_decimal_places(number):
+    # Convert the number to a string
+    num_str = str(number)
+    
+    # Check if the string contains a decimal point
+    if '.' in num_str:
+        # Find the index of the decimal point
+        decimal_index = num_str.index('.')
+        
+        # Count the number of characters after the decimal point
+        decimal_places = len(num_str) - decimal_index - 1
+        
+        return decimal_places
+    else:
+        # If there is no decimal point, return 0
+        return 0
+
+
+
+def parse_decimal_number_string(s):
+    match = re.match(r'(\d+\.\d+)\((\d+)\)', s)
+    if match:
+        value = float(match.group(1))
+        decimal_places_value = count_decimal_places(value)
+        decimal_places_err = count_decimal_places(float('0.' + match.group(2)))
+        err = float('0.' + (decimal_places_value - (decimal_places_err - 1) - 1) * '0' + match.group(2))
+        return value, err
+    else:
+        raise ValueError("Invalid number string format")
+
+
+
+def extract_numbers_error_notation(string):
+    # Define a regular expression pattern to match the number and the number in brackets
+    pattern = re.compile(r'(\d+\.\d+|\d+)(\(\d+\))?')
+
+    # Try to match the pattern in the given string
+    match = pattern.match(string)
+
+    if match:
+        # Extract the main number and the number in brackets
+        main_number_str = match.group(1)
+        main_number = float(main_number_str) if '.' in main_number_str else int(main_number_str)
+        
+        number_in_brackets = int(match.group(2)[1:-1]) if match.group(2) else None
+
+        return str(main_number), str(number_in_brackets)
+    else:
+        # If no match is found, return None for both values
+        return None, None
+
+
+
+def extract_number_and_error(string):
+
+    value, err = extract_numbers_error_notation(string)
+
+    # For integers
+    if float(value) == int(float(value)):
+        return value, err
+
+    # For decimal numbers
+    elif float(value) != int(float(value)):
+        value, err = parse_decimal_number_string(string)
+        return value, err
+
+
+
+"""
+Spectral Type
+"""
+
 def decompose_spectral_type(input_str: str):
     """
     Need:

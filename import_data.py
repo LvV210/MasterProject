@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from functions import *
 
 
 def supergiant_stellar_parameters():
@@ -47,7 +48,11 @@ def falenga():
              "R_opt": 7.4,
              "R_opt_err": 0.4,
              "P_orbit": 1.40839776,
-             "P_spin": 13.5}
+             "P_spin": 13.5,
+             "RL/a": 0.59,
+             "RL/a_err": 0.01, 
+             "Mx": 1.57,
+             "Mx_err": 0.11}
     Cenx3 = {"id": "Cen X-3",
              "semi_eclipse_angle": 27.9,
              "semi_eclipse_angle _err": 0.3,
@@ -60,7 +65,11 @@ def falenga():
              "R_opt": 11.4,
              "R_opt_err": 0.7,
              "P_orbit": 2.087113936,
-             "P_spin": 4.8}
+             "P_spin": 4.8,
+             "RL/a": 0.63,
+             "RL/a_err": 0.01, 
+             "Mx": 1.57,
+             "Mx_err": 0.16}
     U1700 = {"id": "4U1700-37",
              "semi_eclipse_angle": 32,
              "semi_eclipse_angle _err": 1,
@@ -73,7 +82,11 @@ def falenga():
              "R_opt": 22,
              "R_opt_err": 2,
              "P_orbit":  3.411581,
-             "P_spin": None}
+             "P_spin": None,
+             "RL/a": 0.694,
+             "RL/a_err": 0.006, 
+             "Mx": 1.96,
+             "Mx_err": 0.19}
     U1538 = {"id": "4U1538-52",
              "semi_eclipse_angle": 21,
              "semi_eclipse_angle _err": 1,
@@ -86,7 +99,11 @@ def falenga():
              "R_opt": 13,
              "R_opt_err": 1,
              "P_orbit": 3.728382,
-             "P_spin": 526.8}
+             "P_spin": 526.8,
+             "RL/a": 0.53,
+             "RL/a_err": 0.03, 
+             "Mx": 1.02,
+             "Mx_err": 0.17}
     SMCx1 = {"id": "SMC X-1",
              "semi_eclipse_angle": 23,
              "semi_eclipse_angle _err": 2,
@@ -99,7 +116,11 @@ def falenga():
              "R_opt": 15,
              "R_opt_err": 1,
              "P_orbit": 3.89220909,
-             "P_spin": 0.71}
+             "P_spin": 0.71,
+             "RL/a": 0.61,
+             "RL/a_err": 0.02, 
+             "Mx": 1.21,
+             "Mx_err": 0.12}
     Velax1 = {"id": "Vela X-1",
               "semi_eclipse_angle": 30.5,
               "semi_eclipse_angle _err": 0.1,
@@ -112,7 +133,11 @@ def falenga():
               "R_opt": 29,
               "R_opt_err": 1,
               "P_orbit": 8.964368,
-              "P_spin": 283.2}
+              "P_spin": 283.2,
+             "RL/a": 0.595,
+             "RL/a_err": 0.006, 
+             "Mx": 2.12,
+             "Mx_err": 0.16}
     SAX =   {"id": "IGR J18027−2016",
               "semi_eclipse_angle": 31,
               "semi_eclipse_angle _err": 2,
@@ -125,7 +150,11 @@ def falenga():
               "R_opt": 18,
               "R_opt_err": 1,
               "P_orbit":  4.5696,
-              "P_spin": 139.6}
+              "P_spin": 139.6,
+             "RL/a": 0.61,
+             "RL/a_err": 0.02, 
+             "Mx": 1.57,
+             "Mx_err": 0.25}
     XTE =   {"id": "XTE J1855-026",
               "semi_eclipse_angle": 32,
               "semi_eclipse_angle _err": 1,
@@ -138,7 +167,11 @@ def falenga():
               "R_opt": 22,
               "R_opt_err": 2,
               "P_orbit":  6.0724,
-              "P_spin": 360.7}
+              "P_spin": 360.7,
+             "RL/a": 0.63,
+             "RL/a_err": 0.03, 
+             "Mx": 1.41,
+             "Mx_err": 0.24}
     EXO =   {"id": "EXO 1722-363",
               "semi_eclipse_angle": 26,
               "semi_eclipse_angle _err": 4,
@@ -169,6 +202,22 @@ def falenga():
     df = pd.DataFrame([LMCx4, Cenx3, U1538, U1700, SMCx1, Velax1, SAX, XTE, EXO, OAO])
 
     return df
+
+
+
+def falenga_table7():
+    df_falenga7 = pd.read_csv('../tables/falenga_table7.csv', delimiter=',')
+
+    for column in df_falenga7:
+
+        if column != 'Source':
+            df_falenga7[column + '_err'] = 0
+            for i in range(len(df_falenga7[column])):
+                value, err = extract_number_and_error(df_falenga7[column].loc[i])
+                df_falenga7.loc[i, column] = value
+                df_falenga7.loc[i, column + '_err'] = err
+
+    return df_falenga7
 
 
 def BailerJones():
