@@ -217,7 +217,12 @@ def falenga_table7():
                 df_falenga7.loc[i, column] = value
                 df_falenga7.loc[i, column + '_err'] = err
 
-    return df_falenga7
+    for column in df_falenga7:
+        if column != 'Source':
+            for i in range(len(df_falenga7[column])):
+                    df_falenga7.loc[i, column] = float(df_falenga7.loc[i, column])
+
+    return df_falenga7.rename(columns={'Source': 'id'})
 
 
 def BailerJones():

@@ -4,7 +4,7 @@ from IPython.display import Markdown as md
 from tabulate import tabulate
 import re
 import math
-from astropy.constants import R_sun, L_sun, sigma_sb
+from astropy.constants import R_sun, L_sun, sigma_sb, G, M_sun
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 import tarfile
@@ -622,6 +622,8 @@ def expected_radius_error(L_, SigmaL_, Teff_, SigmaTeff_):
 
     return R_value, R_error
 
+
+
 def Teff_error(ST):
     # Decompose spectral type
     spectral_type, luminosity_class = decompose_spectral_type(ST)
@@ -635,7 +637,77 @@ def Teff_error(ST):
         return 529
     elif luminosity_class == 'V':
         return 1021
-    
+
+
+
+def roche_lobe_radius_q(a_, Sigmaa_, M1_, SigmaM1_, M2_, SigmaM2_):
+    # Define the symbols
+    a, Sigmaa, M1, SigmaM1, M2, SigmaM2 = sp.symbols('a Sigmaa M1 SigmaM1 M2 SigmaM2')
+
+    # Define the function
+    RL = a * (0.49 * (M1 / M2)**(2/3)) / (0.6 * (M1 / M2)**(2/3) + sp.log(1 + (M1 / M2)**(1/3)))
+
+    # Calculate the partial derivatives
+    partial_derivative_a = sp.diff(RL, a)
+    partial_derivative_M1 = sp.diff(RL, M1)
+    partial_derivative_M2 = sp.diff(RL, M2)
+
+    # Calculate the error expression
+    error_RL = sp.sqrt(
+        (partial_derivative_a * Sigmaa)**2 +
+        (partial_derivative_M1 * SigmaM1)**2 +
+        (partial_derivative_M2 * SigmaM2)**2)
+
+    # Substitute values
+    values = {
+        a: a_,
+        Sigmaa: Sigmaa_,
+        M1: M1_,
+        SigmaM1: SigmaM1_,
+        M2: M2_,
+        SigmaM2: SigmaM2_
+    }
+
+    RL_value = RL.subs(values).evalf()
+    RL_error = error_RL.subs(values).evalf()
+
+    return RL_value, RL_error
+
+
+
+def roche_lobe_radius_g(a_, Sigmaa_, M_, SigmaM_, R_, SigmaR_):
+
+    # Define the symbols
+    a, Sigmaa, M, SigmaM, R, SigmaR = sp.symbols('a Sigmaa M SigmaM R SigmaR')
+
+    # Define the function
+    RL = a * (0.38 - 0.20 * sp.log(M / R, 10))
+
+    # Calculate the partial derivatives
+    partial_derivative_a = sp.diff(RL, a)
+    partial_derivative_M = sp.diff(RL, M)
+    partial_derivative_R = sp.diff(RL, R)
+
+    # Calculate the error expression
+    error_RL = sp.sqrt(
+        (partial_derivative_a * Sigmaa)**2 +
+        (partial_derivative_M * SigmaM)**2 +
+        (partial_derivative_R * SigmaR)**2)
+
+    # Substitute values
+    values = {
+        a: a_,
+        Sigmaa: Sigmaa_,
+        M: M_,
+        SigmaM: SigmaM_,
+        R: R_,
+        SigmaR: SigmaR_
+    }
+
+    RL_value = RL.subs(values).evalf()
+    RL_error = error_RL.subs(values).evalf()
+
+    return RL_value, RL_error
 
 
 
