@@ -17,4 +17,4 @@ Spectra/
 *.zip
 
 # Ignore the models
-ModelFitting/Models
+ModelFitting/Models/
