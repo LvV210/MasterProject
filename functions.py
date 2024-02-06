@@ -717,7 +717,7 @@ def roche_lobe_radius_g(a_, Sigmaa_, M_, SigmaM_, R_, SigmaR_):
 """
 UVES spectra analysis
 """
-def extract_spectrum_within_range(wavelengths, flux, start_wavelength, end_wavelength):
+def extract_spectrum_within_range(wavelengths: np.array, flux: np.array, start_wavelength: float, end_wavelength: float)->tuple:
     """
     Extract wavelength and flux values within a given range.
 
@@ -766,8 +766,8 @@ def import_spectra(object: str):
     spectra = []
     for file in adp_files:
         data = fits.getdata(folder_path + file)
-        wavelength = data['WAVE'][0]
-        flux = data['FLUX'][0]
+        wavelength = np.array(data['WAVE'][0])
+        flux = np.array(data['FLUX'][0])
         spectra.append((wavelength, flux))
 
     return spectra
