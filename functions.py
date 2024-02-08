@@ -850,3 +850,63 @@ def plot_spectrum(object: str):
     plt.show()
 
     return
+
+
+
+def vandermeer_lines(element:str =None)->list:
+    """
+    Returns a list of elements reported in van der Meer (2007) table 3.
+
+    Args:
+        element (str, optional): Choose [balmer, helium1, other]. Defaults to None.
+
+    Returns:
+        list: List of tuples (wavelength, line name)
+    """
+    balmer = [
+        (4861.33, r"H$\beta$: 4861.33"),
+        (4340.46, r"H$\gamma$: 4340.46"),
+        (4101.73, r"H$\delta$: 4101.73"),
+        (3970.07, r"H$\epsilon$: 3970.07"),
+        (3889.05, r"H8: 3889.05"),
+        (3835.38, r"H9: 3835.38"), 
+        (3797.90, r"H10: 3797.90"),
+        (3770.63, r"H11: 3770.63"),
+        (3750.15, r"H12: 3750.15"),
+        (3734.37, r"H13: 3734.37"),
+        (3721.94, r"H14: 3721.94"),
+        (3711.97, r"H15: 3711.97"),
+        (3703.85, r"H16: 3703.85")
+    ]
+
+    helium1 = [
+        (5875.66, r"He I: 5875.66"),
+        (4471.50, r"He I: 4471.50"),
+        (4026.21, r"He I: 4026.21"),
+        (3819.62, r"He I: 3819.62"),
+        (3705.02, r"He I: 3705.02"),
+        (3634.25, r"He I: 3634.25"),
+        (3587.27, r"He I: 3587.27"),
+        (4921.93, r"He I: 4921.93"),
+        (4387.93, r"He I: 4387.93"),
+        (4143.76, r"He I: 4143.76"),
+        (4009.26, r"He I: 4009.26"),
+        (4713.17, r"He I: 4713.17"),
+        (5015.68, r"He I: 5015.68"),
+        (5047.74, r"He I: 5047.74")
+    ]
+
+    other = [
+        (5411.53, r"He II: 5411.53"),
+        (4199.83, r"He II: 4199.83"),
+        (4088.86, r"Si IV: 4088.86"),
+    ]
+
+    if element == "balmer":
+        return balmer
+    if element == "Helium1":
+        return helium1
+    if element == "other":
+        return other
+    if element == None:
+        return balmer + helium1 + other
