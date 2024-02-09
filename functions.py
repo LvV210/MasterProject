@@ -761,13 +761,19 @@ def import_spectra(object: str):
 
     # Filter files that start with "ADP"
     adp_files = [file for file in all_files if file.startswith("ADP")]
-
     # Gather the spectra
     spectra = []
     for file in adp_files:
         data = fits.getdata(folder_path + file)
+
+        # Not all spectra have a FLUX, so instead import the FLUX_REDUCED
+        try:
+            flux = np.array(data['FLUX'][0])
+        except KeyError:
+            flux = np.array(data['FLUX_REDUCED'][0])
+            print(f"Spectrum for {object} is FLUX REDUCED")
+
         wavelength = np.array(data['WAVE'][0])
-        flux = np.array(data['FLUX'][0])
         spectra.append((wavelength, flux))
 
     return spectra
