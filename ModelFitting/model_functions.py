@@ -358,3 +358,19 @@ def vandermeer_lines(element:str =None)->list:
         return other
     if element == None:
         return balmer + helium1 + other
+
+
+
+def extract_temperature_and_gravity(model_name):
+    # Define the regular expression pattern
+    pattern = r"T(\d+)logg([\d.]+)"
+    
+    # Match the pattern in the model name
+    match = re.match(pattern, model_name)
+    
+    if match:
+        temperature = int(match.group(1))
+        gravity = float(match.group(2))
+        return temperature, gravity
+    else:
+        return None, None
