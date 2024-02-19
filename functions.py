@@ -753,11 +753,17 @@ def divide_colormap(num_parts, colormap_name='rainbow'):
 
 def import_spectra(object: str):
 
-    # Path to root folder
-    folder_path = f"../Spectra/{object}/"
+    try:
+        # Path to root folder
+        folder_path = f"../Spectra/{object}/"
+        # Get a list of all files in the folder
+        all_files = os.listdir(folder_path)
 
-    # Get a list of all files in the folder
-    all_files = os.listdir(folder_path)
+    except FileNotFoundError:
+        # Path to root folder
+        folder_path = f"/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/Spectra/{object}/"
+        # Get a list of all files in the folder
+        all_files = os.listdir(folder_path)
 
     # Filter files that start with "ADP"
     adp_files = [file for file in all_files if file.startswith("ADP")]
