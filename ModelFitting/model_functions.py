@@ -509,8 +509,8 @@ def determine_doppler_shift(spectra: list, lines: dict, guassian: callable, obje
 
         # Initial guess for the parameters
         initial_guess = [line[0] - lines['Doppler_guess'], # mu
-                        max(flux)/min(flux), # amplitude
-                        (max(wav_line) - min(wav_line)) / 4, # stddev
+                        -max(flux)/min(flux), # amplitude
+                        (max(wav_line) - min(wav_line)) / 3, # stddev
                         np.mean(flux_cont)] # continuum height
 
         # Fit the data
@@ -533,7 +533,6 @@ def determine_doppler_shift(spectra: list, lines: dict, guassian: callable, obje
         velocity = delta_lambda / lambda0 * 3E5 # km/s
         doppler_shift.append(velocity)
 
-    print(doppler_shift)
     print(f'The velocity of the object is: {np.mean(doppler_shift)} +- {np.std(doppler_shift)}')
 
 
@@ -596,7 +595,7 @@ def doppler_shift_spectrum(wavelengths:Iterable[float], vrad:float)->Iterable[fl
 
 
 
-def chi_squared_for_all_models(spectra:list, models:dict, lines:dict, SNR: float, vrad: float, vsini: float)->dict:
+def chi_squared_for_all_models(spectra:list, models:dict, lines:dict, SNR:list, vrad: float, vsini: float)->dict:
     """
     Determines the chi-squared for every model for the given spectral lines.
 
@@ -604,41 +603,53 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines:dict, SNR: float
         spectra (list): The spectra of the object (UVES)
         models (dict): Dictionary with the models
         lines (dict): Dictionary with the lines and their ranges
-        SNR (float): Signal to noise ratio of the spectrum
-        doppler_shift (float): The doppler_shift of the object in km/s
+        SNR (list): Signal to noise ratio of the spectrum
+        vrad (float): The doppler_shift of the object in km/s
         vsini (float): the vsini parameter of the object in km/s
 
     Returns:
         dict: Dictionary with the chi-squared for every model
     """
-    chi2 = {}
+    # Number of spectral lines
+    N_lines = len(lines['lines'])
 
-    for key, model in models.items():
-        print(f"\rIteration {key}", end='', flush=True)
+    # Set the dictionaries to save the chi-squared value
+    chi2 = {}
+    chi2_perline = {}
+
+    for key in models.keys():
         # Chi-squared parameter
         chi2[key] = 0
+        # Chi-squared per line
+        chi2_perline[key] = {}
 
-        for line in lines['lines']:
-            # Rest wavelength of the spectral line
-            central_wavelength = line[0]
+    # Fit the models to every given spectral line
+    for i, line in enumerate(lines['lines']):
+        print(f"\r\t\tLine {i+1} out of {N_lines}: {line[1]}", end='', flush=True)
+        # Rest wavelength of the spectral line
+        central_wavelength = line[0]
 
-            # Select the spectrum that contains the spectral line
-            wav, flux = select_spectrum(spectra, central_wavelength)
+        # Select the spectrum that contains the spectral line
+        wav, flux = select_spectrum(spectra, central_wavelength)
+        SNR_value = select_SNR(wav, SNR)
 
-            # Extract the spectral line from the spectrum
-            wav, flux = extract_spectrum_within_range(wav, flux, line[2], line[5])
-            wav_cont, flux_cont = extract_continuum(wav, flux, line[2], line[5], line[3], line[4])
-            wav_line, flux_line = extract_spectrum_within_range(wav, flux, line[3], line[4])
+        # Extract the spectral line from the spectrum
+        wav, flux = extract_spectrum_within_range(wav, flux, line[2], line[5])
+        wav_cont, flux_cont = extract_continuum(wav, flux, line[2], line[5], line[3], line[4])
+        wav_line, flux_line = extract_spectrum_within_range(wav, flux, line[3], line[4])
+
+        # Linear fit to continuum
+        cont_fit = np.poly1d(np.polyfit(wav_cont, flux_cont, 1))
+        # Normalize spectrum
+        flux /= cont_fit(wav)
+        flux_cont /= cont_fit(wav_cont)
+        flux_line /= cont_fit(wav_line)
+
+        # Fit all models to the spectral line
+        for key, model in models.items():
+
             # Extract the line from the model
             wav_model, flux_model = extract_spectrum_within_range(np.array(model['WAVELENGTH']), np.array(model['FLUX']), line[2], line[5])
-
-            # Linear fit to continuum
-            cont_fit = np.poly1d(np.polyfit(wav_cont, flux_cont, 1))
-            # Normalize spectrum
-            flux /= cont_fit(wav)
-            flux_cont /= cont_fit(wav_cont)
-            flux_line /= cont_fit(wav_line)
-
             # Dopplershift the model
             wav_model = doppler_shift_spectrum(wav_model, vrad)
 
@@ -646,13 +657,20 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines:dict, SNR: float
             wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
             flux_model = pyasl.rotBroad(wav_model, flux_model, 0.0, vsini)
 
-            chi2[key] += chi_squared(wav_model, flux_model, wav_line, flux_line, SNR)
+            # Calculate chi-squared for this line
+            chi2_value = chi_squared(wav_model, flux_model, wav_line, flux_line, SNR_value)
+            # Keep track of the total chi-squared for all lines
+            chi2[key] += chi2_value
+            # Save for each line the chi-squared individually
+            chi2_perline[key][line[1]] = chi2_value
 
+    # Normalize all chi-squared values
+    for key in models.keys():
         # Devide the total chi-squared by the number of lines.
         chi2[key] /= len(lines['lines'])
 
     print("DONE", end='', flush=True)
-    return chi2
+    return chi2, chi2_perline
 
 
 
@@ -737,6 +755,103 @@ def lines(object_name:str)->dict:
         'Doppler_guess': 2.8
     }
 
-    line_dict = {'4U1538-52': _4U1538_52}
+    _CenX_3 = {
+        'lines': [
+            [4861.33, r"H$\beta$: 4861.33", 4846, 4855, 4867.5, 4874.5],
+            [4921.93, r"He I: 4921.93", 4907, 4917.8, 4926.2, 4934],
+            [5015.68, r"He I: 5015.68", 5000, 5011, 5020.5, 5030],
+            [5411.53, r"He II: 5411.53", 5405.75, 5407, 5417.5, 5423],
+            [5875.66, r"He I: 5875.66", 5859, 5870, 5882, 5887.7],
+            [4199.83, r"He II: 4199.83", 4191, 4196.8, 4204, 4210],
+            [4340.46, r"H$\gamma$: 4340.46", 4326, 4335.6, 4345.4, 4355],
+            [3770.63, r"H11: 3770.63", 3764, 3766.5, 3774.7, 3778],
+            [3797.90, r"H10: 3797.90", 3791, 3794.25, 3801.5, 3804.5],
+            [3819.62, r"He I: 3819.62", 3812.7, 3816.7, 3822.3, 3826],
+            [3835.38, r"H9: 3835.38", 3827, 3831, 3839.25, 3845],
+            [3889.05, r"H8: 3889.05", 3875, 3884, 3894, 3902]
+        ],
+        'Doppler_guess': 0
+    }
+
+    _SMCX_1 = {
+        'lines': [
+            [4713.17, r"He I: 4713.17", 4710, 4713.3, 4719.7, 4724],
+            [4861.33, r"H$\beta$: 4861.33", 4845, 4857, 4869, 4879],
+            [4921.93, r"He I: 4921.93", 4915, 4921.3, 4928.9, 4934],
+            [5015.68, r"He I: 5015.68", 5010, 5015.5, 5022.5, 5029],
+            [5047.74, r"He I: 5047.74", 5043, 5047.8, 5054.5, 5061],
+            [5411.53, r"He II: 5411.53", 5400, 5408.5, 5418.5, 5424],
+            #[5875.66, r"He I: 5875.66", ]
+            [3587.27, r"He I: 3587.27", 3582, 3586.7, 3591.8, 3594.2],
+            #[4009.26, r"He I: 4009.26", 4005, 4009.25, 4014.8, 4018],
+            #[4026.21, r"He I: 4026.21", 4024, 4025.75, 4031.5, 4035]
+        ],
+        'Doppler_guess': -3.5
+    }
+
+    _4U1700_37 = {
+        'lines': [
+            [3835.38, r"H9: 3835.38", 3830, 3832, 3837.5, 3840],
+            [3889.05, r"H8: 3889.05", 3882.75, 3884.5, 3891.75, 3896],
+            [4026.21, r"He I: 4026.21", 4019.5, 4021.5, 4027.75, 4030.5],
+            [4058, r"N IV 4058", 4053, 4055, 4059.7, 4062],
+            [4199.83, r"He II: 4199.83", 4195.5, 4196.6, 4201.9, 4204]
+        ],
+        'Doppler_guess': 0.6
+    }
+
+    _LMCX_4 = {
+        'lines': [
+            [4861.33, r"H$\beta$: 4861.33", 4848, 4859, 4873, 4880],
+            [4921.93, r"He I: 4921.93", 4910, 4922.1, 4932.2, 4946],
+            [5411.53, r"He II: 5411.53", 5405, 5412.5, 5422.3, 5427],
+            [4340.46, r"H$\gamma$: 4340.46", 4335, 4339.6, 4350, 4354],
+            [4471.50, r"He I: 4471.50", 4467, 4472.3, 4480.5, 4485]
+        ],
+        'Doppler_guess': -6
+    }
+
+    line_dict = {'4U1538-52': _4U1538_52, 'Cen X-3': _CenX_3, 'SMC X-1': _SMCX_1,
+                 '4U1700-37': _4U1700_37, 'LMC X-4': _LMCX_4}
 
     return line_dict[object_name]
+
+
+
+def select_SNR(wav:list, SNR:list)->float:
+    """
+    Select the SNR that corresponds to the spectrum
+
+    Args:
+        wav (list): Wavelength of the spectrum
+        SNR (list): List with SNR of all spectra
+
+    Returns:
+        float: SNR
+    """
+    for i in SNR:
+        if i[0] >= min(wav) and i[0] <= max(wav):
+            return i[1]
+
+
+
+def SignalToNoise(object_name:str)->list:
+    """
+    Returns the SNR of the spectra of the given object
+
+    Args:
+        object_name (str): Name of the object
+
+    Returns:
+        (list): List with SNR of the objects spectra
+    """
+    SNR_4U1538_52 = [(4000, 9.), (5000, 63.7)]
+    SNR_CenX_3 = [(4000, 32.8), (5000, 90.7)]
+    SNR_SMCX_1 = [(4000, 60.1), (5000, 72.9)]
+    SNR_4U1700_37 = [(3500, 116.1), (4000, 390), (5000, 331.8), (7000, 319.2)]
+    SNR_LMCX_4 = [(4000, 59.5), (5000, 64.8)]
+
+    SNR = {'4U1538-52': SNR_4U1538_52, 'Cen X-3': SNR_CenX_3, 'SMC X-1': SNR_SMCX_1,
+           '4U1700-37': SNR_4U1700_37, 'LMC X-4': SNR_LMCX_4}
+
+    return SNR[object_name]
