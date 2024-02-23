@@ -1,0 +1,28 @@
+Grid Search Information:
+------------------------
+Object: 		 SMC X-1
+FolderPath: 	 /mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/FitResults/SMCX_1S100E250delta5/
+Galaxy: 		 SMC
+
+------------------------
+vsin(i) Start: 		 100
+vsin(i) End: 		 250
+vsin(i) Stepsize: 	 5
+
+------------------------
+GRID SEARCH RESULTS
+The minimum chi-squared: 	 4.11553302294702
+The best vsin(i): 			 170 km/s
+This is for model: 			 T28000logg3.0
+Radial Velocity: 		 205.34896272541638
+Radial Velocity error: 	 15.944215376163775
+
+The SNR of the spectra: [(4000, 60.1), (5000, 72.9)]
+The lines examined:
+	He I: 4713.17
+	H$\beta$: 4861.33
+	He I: 4921.93
+	He I: 5015.68
+	He I: 5047.74
+	He II: 5411.53
+	He I: 3587.27

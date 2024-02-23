@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import re
+import json
 
 from typing import Iterable
 from scipy.interpolate import CubicSpline
@@ -169,6 +170,40 @@ def import_models(galaxy: str)->dict:
         model['log(g)'] = log_g / 10
 
         models[f'T{T * 1000}logg{log_g / 10}'] = model
+
+    # Save the models as json file
+    with open(folder_name + '_save.json', 'w') as json_file:
+        json.dump(models, json_file)
+
+    return models
+
+
+
+def import_models_quickload(galaxy:str)->dict:
+    """
+    Imports all models for a given galaxy
+
+    Args:
+        galaxy (str): Galaxy to import the models for (Milkyway, SMC, LMC)
+
+    Returns:
+        models (dict): Dictionary with models. Name: T{Teff}logg{log(g)}
+    """
+    
+    # Path to the models
+    model_path = '/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/Models/'
+
+    # Assign folder name corresponding to the galaxy
+    if galaxy == 'Milkyway':
+        folder_name = model_path + 'gal-ob-i_line_all'
+    elif galaxy == 'SMC':
+        folder_name = model_path + 'smc-ob-i_line_all'
+    elif galaxy == 'LMC':
+        folder_name = model_path + 'lmc-ob-i_line_all'
+
+    # Load the JSON file with the models
+    with open(folder_name + '_save.json', 'r') as json_file:
+        models = json.load(json_file)
 
     return models
 
@@ -403,7 +438,7 @@ def select_spectrum(spectra: list, central_wav: float)->tuple:
     Returns:
         tuple: wavelength, flux
     """
-    for spectrum in spectra:
+    for spectrum in spectra[::-1]:
         if central_wav >= min(spectrum[0])  and central_wav <= max(spectrum[0]):
             return spectrum[0], spectrum[1]
 
@@ -474,7 +509,7 @@ def gaussian(x: list, mean: float, amplitude: float, stddev: float, continuum: f
 
 
 
-def determine_doppler_shift(spectra: list, lines: dict, guassian: callable, object_name:str, plot: bool=False)->list:
+def determine_doppler_shift(spectra: list, lines: dict, guassian: callable, object_name:str, plot: bool=False, save=False)->list:
     """
     This function takes a spectra and list with lines (and their ranges)
     and fits a gaussian to these lines to determine the doppler shift of
@@ -484,8 +519,8 @@ def determine_doppler_shift(spectra: list, lines: dict, guassian: callable, obje
         spectra (list): Spectra of the object (UVES)
         lines (dict): Spectral lines and their ranges
         guassian (callable): Function of a gaussian
-        object_name (str): Name of the object
         plot (bool, optional): If true, the fits to the data are shown. Defaults to False.
+        save (_type_): If a savepath is given the plots are being saved
 
     Returns:
         list: All doppler shift of the individual lines.
@@ -509,8 +544,8 @@ def determine_doppler_shift(spectra: list, lines: dict, guassian: callable, obje
 
         # Initial guess for the parameters
         initial_guess = [line[0] - lines['Doppler_guess'], # mu
-                        -max(flux)/min(flux), # amplitude
-                        (max(wav_line) - min(wav_line)) / 3, # stddev
+                         max(flux_line) - np.mean(flux_cont), # amplitude
+                        (max(wav_line) - min(wav_line)) / 3.5, # stddev
                         np.mean(flux_cont)] # continuum height
 
         # Fit the data
@@ -572,9 +607,10 @@ def determine_doppler_shift(spectra: list, lines: dict, guassian: callable, obje
                 if i == len(axes) - 1:
                     ax.set_xlabel(r'Wavelength ($\AA$)', size=12)
 
+
         plt.suptitle(f"{object_name}\nRadial velocity: {round(np.mean(doppler_shift), 2)}" + r" $\pm$ " + f"{round(np.std(doppler_shift), 2)}" + r" km $s^{-1}$", size=20)
         plt.tight_layout()
-        plt.show()
+        plt.savefig(save)
 
     return doppler_shift
 
@@ -686,6 +722,7 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
         vrad (float): Radial velocity (km/s)
         vsini (float): vsin(i) (km/s)
     """
+    plt.figure(figsize=(12,5))
     model = models[best_model]
     for line in lines['lines']:
         # Rest wavelength of the spectral line
@@ -715,13 +752,18 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
         wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
         flux_model = pyasl.rotBroad(wav_model, flux_model, 0.0, vsini)
 
-        plt.plot(wav, flux, color='blue', alpha=0.2)
-        plt.plot(wav_line, flux_line, color='orange', alpha=0.2)
-        plt.plot(wav_model, flux_model, color='green', label=f'{best_model}')
+        plt.plot(wav, flux, color='blue', alpha=0.5)
+        plt.plot(wav_line, flux_line, color='orange', alpha=0.5)
+        plt.plot(wav_model, flux_model, color='green')
 
         # Annotate each line with text vertically
         plt.text(line[0], max(flux), line[1], ha='center', va='bottom', rotation=90, size=7)
-    plt.legend()
+
+    plt.title(f'Best model of the lines\n{best_model}', fontsize=15)
+    plt.xlabel(r'$\lambda$ ($\AA$)', fontsize=12)
+    plt.ylabel('Normalized Intensity', fontsize=12)
+
+    plt.grid(alpha=0.25)
     plt.show()
 
     return
@@ -782,7 +824,7 @@ def lines(object_name:str)->dict:
             [5047.74, r"He I: 5047.74", 5043, 5047.8, 5054.5, 5061],
             [5411.53, r"He II: 5411.53", 5400, 5408.5, 5418.5, 5424],
             #[5875.66, r"He I: 5875.66", ]
-            [3587.27, r"He I: 3587.27", 3582, 3586.7, 3591.8, 3594.2],
+            [3587.27, r"He I: 3587.27", 3585.5, 3586.7, 3591.8, 3594.2],
             #[4009.26, r"He I: 4009.26", 4005, 4009.25, 4014.8, 4018],
             #[4026.21, r"He I: 4026.21", 4024, 4025.75, 4031.5, 4035]
         ],
@@ -808,7 +850,7 @@ def lines(object_name:str)->dict:
             [4340.46, r"H$\gamma$: 4340.46", 4335, 4339.6, 4350, 4354],
             [4471.50, r"He I: 4471.50", 4467, 4472.3, 4480.5, 4485]
         ],
-        'Doppler_guess': -6
+        'Doppler_guess': -5
     }
 
     line_dict = {'4U1538-52': _4U1538_52, 'Cen X-3': _CenX_3, 'SMC X-1': _SMCX_1,
@@ -850,8 +892,24 @@ def SignalToNoise(object_name:str)->list:
     SNR_SMCX_1 = [(4000, 60.1), (5000, 72.9)]
     SNR_4U1700_37 = [(3500, 116.1), (4000, 390), (5000, 331.8), (7000, 319.2)]
     SNR_LMCX_4 = [(4000, 59.5), (5000, 64.8)]
+    SNR_VelaX_1 = [(4000), 378.9]
 
     SNR = {'4U1538-52': SNR_4U1538_52, 'Cen X-3': SNR_CenX_3, 'SMC X-1': SNR_SMCX_1,
-           '4U1700-37': SNR_4U1700_37, 'LMC X-4': SNR_LMCX_4}
+           '4U1700-37': SNR_4U1700_37, 'LMC X-4': SNR_LMCX_4, 'Vela X-1': SNR_VelaX_1}
 
     return SNR[object_name]
+
+
+
+def extract_vsini(vsini:str)->int:
+    """
+    Takes a string like 'vsini###'
+    This function extracts the number
+
+    Args:
+        vsini (str): String like 'vsini###'
+
+    Returns:
+        int: The number in the string
+    """
+    return int(re.search(r'\d+$', vsini).group())
