@@ -610,6 +610,7 @@ def determine_doppler_shift(spectra: list, lines: dict, guassian: callable, obje
 
         plt.suptitle(f"{object_name}\nRadial velocity: {round(np.mean(doppler_shift), 2)}" + r" $\pm$ " + f"{round(np.std(doppler_shift), 2)}" + r" km $s^{-1}$", size=20)
         plt.tight_layout()
+        plt.show()
         plt.savefig(save)
 
     return doppler_shift
