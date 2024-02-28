@@ -22,7 +22,7 @@ def scientific_notation(df: pd.DataFrame):
     return df
 
 
-def display_df(df2: pd.DataFrame, scientific_notation: bool = True, round: bool = False):
+def display_df(df2: pd.DataFrame, scientific_notation: bool = True, round_: bool = False, round_digits:int=1):
     """
     Displays a given dataframe in a nice way with better collumn names and units.
     """
@@ -31,6 +31,8 @@ def display_df(df2: pd.DataFrame, scientific_notation: bool = True, round: bool 
                 "R_expected": r"$R_{expected}[R_{\odot}]$",
                 "R_true/R_expected": r"$\frac{R_{true}}{R_{expected}}$",
                 "L_true": r"$L_{true}[L_{\odot}]$",
+                "L_true_err_low": r"$\delta_{low} L_{true}[L_{\odot}]$",
+                "L_true_err_high": r"$\delta_{high} L_{true}[L_{\odot}]$",
                 "L_expected": r"$L_{expected}[L_{\odot}]$",
                 "L_true/L_expected": r"$\frac{L_{true}}{L_{expected}}$",
                 "ST": "Spec. Type",
@@ -66,8 +68,8 @@ def display_df(df2: pd.DataFrame, scientific_notation: bool = True, round: bool 
         df = df.applymap(lambda x: "*" + "%.2E" % x if isinstance(x, (int, float, np.floating)) else x)
 
     # Round
-    if round:
-        df = df.applymap(lambda x: round(x, 1) if isinstance(x, (int, float, np.floating)) else x)
+    if round_:
+        df = df.applymap(lambda x: round(x, round_digits) if isinstance(x, (int, float, np.floating)) else x)
 
     # To markdown
     markdown_text = df.to_markdown(index=False, tablefmt="pipe")
@@ -140,12 +142,12 @@ def extract_number_and_error(string):
 
     # For integers
     if float(value) == int(float(value)):
-        return value, err
+        return float(value), float(err)
 
     # For decimal numbers
     elif float(value) != int(float(value)):
         value, err = parse_decimal_number_string(string)
-        return value, err
+        return float(value), float(err)
 
 
 
