@@ -22,14 +22,19 @@ def scientific_notation(df: pd.DataFrame):
     return df
 
 
-def display_df(df2: pd.DataFrame, scientific_notation: bool = True, round_: bool = False, round_digits:int=1):
+def display_df(df2: pd.DataFrame, scientific_notation: bool = True, round_: bool = False, round_digits:int=1, return_md_text:bool=False):
     """
     Displays a given dataframe in a nice way with better collumn names and units.
     """
     df = df2.copy()
     columns = {"R_true": (r"$R_{true}[R_{\odot}]$"),
+               "R_true_err": r"$\delta R_{true} [R_{\odot}]$",
                 "R_expected": r"$R_{expected}[R_{\odot}]$",
+                "R_expected_err_high": r"$\delta_{high} R_{expected} [R_{\odot}]$",
+                "R_expected_err_low": r"$\delta_{low} R_{expected} [R_{\odot}]$",
                 "R_true/R_expected": r"$\frac{R_{true}}{R_{expected}}$",
+                "R_ST_err": r"$\delta R_{ST} [R_{\odot}]$",
+                "R_ST": r"$R_{ST} [R_{\odot}]$",
                 "L_true": r"$L_{true}[L_{\odot}]$",
                 "L_true_err_low": r"$\delta_{low} L_{true}[L_{\odot}]$",
                 "L_true_err_high": r"$\delta_{high} L_{true}[L_{\odot}]$",
@@ -77,7 +82,11 @@ def display_df(df2: pd.DataFrame, scientific_notation: bool = True, round_: bool
     # Remove '*' from text
     markdown_text = markdown_text.replace('*', '')
 
-    return md(markdown_text)
+    if return_md_text:
+        return markdown_text
+    else:
+        return md(markdown_text)
+
 
 
 """
@@ -246,7 +255,7 @@ def interpolate(df2: pd.DataFrame, spectral_type: str, quantity: str, plot: bool
     df['luminosity_class'] = df['ST'].apply(decompose_spectral_type).apply(lambda x: x[1])
 
     # If luminosity class equals Ia or Ia+, then set it to I
-    if luminosity_class == 'Ia' or 'Ia+' or 'Ib' or 'Ib+':
+    if luminosity_class == 'Ia' or luminosity_class == 'Ia+' or luminosity_class == 'Ib' or luminosity_class == 'Ib+':
         luminosity_class = 'I'
 
     # Filter dataframe for luminosity class
