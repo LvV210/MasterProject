@@ -723,9 +723,20 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
         vrad (float): Radial velocity (km/s)
         vsini (float): vsin(i) (km/s)
     """
-    plt.figure(figsize=(12,5))
+    # Make subplots
+    num_plots = len(lines['lines'])
+    num_rows = (num_plots - 1) // 4 + 1  # Calculate the number of rows needed
+    fig, axes = plt.subplots(num_rows, 4, figsize=(15, num_rows * 4))
+    x = 0
+    y = 0
+
+    # Flatten axes if necessary
+    if num_rows == 1:
+        axes = [axes]
+
     model = models[best_model]
     for line in lines['lines']:
+
         # Rest wavelength of the spectral line
         central_wavelength = line[0]
 
@@ -753,18 +764,28 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
         wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
         flux_model = pyasl.rotBroad(wav_model, flux_model, 0.0, vsini)
 
-        plt.plot(wav, flux, color='blue', alpha=0.5)
-        plt.plot(wav_line, flux_line, color='orange', alpha=0.5)
-        plt.plot(wav_model, flux_model, color='green')
+        axes[x,y].plot(wav, flux, color='blue', alpha=0.5)
+        axes[x,y].plot(wav_line, flux_line, color='orange', alpha=0.5)
+        axes[x,y].plot(wav_model, flux_model, color='green')
 
         # Annotate each line with text vertically
-        plt.text(line[0], max(flux), line[1], ha='center', va='bottom', rotation=90, size=7)
+        axes[x,y].set_title(line[1], fontsize=10)
+        axes[x,y].grid(alpha=0.25)
 
-    plt.title(f'Best model of the lines\n{best_model}', fontsize=15)
-    plt.xlabel(r'$\lambda$ ($\AA$)', fontsize=12)
-    plt.ylabel('Normalized Intensity', fontsize=12)
+        if y == 0:
+            axes[x,y].set_ylabel('Normalised Flux', fontsize=12)
+        if x == num_rows - 1:
+            axes[x,y].set_xlabel(r"$\lambda$ ($\AA$)", fontsize=12)
 
-    plt.grid(alpha=0.25)
+        # Set right plot coordinates
+        if (y + 1) % 4 == 0:
+            x += 1
+            y = 0
+        else:
+            y += 1
+
+    plt.suptitle(f'Best model of the lines\n{best_model}', fontsize=15)
+    plt.tight_layout()
     plt.show()
 
     return
