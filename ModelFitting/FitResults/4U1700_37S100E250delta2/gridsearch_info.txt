@@ -1,0 +1,27 @@
+Grid Search Information:
+------------------------
+Object: 		 4U1700-37
+Object_ : 		 4U1700_37
+FolderPath: 	 /mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/FitResults/4U1700_37S100E250delta2/
+Galaxy: 		 Milkyway
+
+------------------------
+vsin(i) Start: 		 100
+vsin(i) End: 		 250
+vsin(i) Stepsize: 	 2
+
+------------------------
+GRID SEARCH RESULTS
+The minimum chi-squared: 	 109.3476753371956
+The best vsin(i): 			 152 km/s
+This is for model: 			 T30000logg3.2
+Radial Velocity: 		 -50.118990065438695
+Radial Velocity error: 	 23.853733232522497
+
+The SNR of the spectra: [(4000, 390.1), (7000, 310.3)]
+The lines examined:
+	H8: 3889.05
+	He I: 4026.21
+	N IV 4058
+	He II: 4199.83
+	He II 4541
