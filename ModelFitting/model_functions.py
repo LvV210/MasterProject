@@ -792,6 +792,159 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
 
 
 
+def plot_continuum_fits(spectra, lines):
+
+    # Lists to save the data
+    wav_list = []
+    flux_list = []
+    fit_list = []
+    wav_line_list = []
+    flux_line_list = []
+
+    # A linear continuum fit for every spectral line
+    for line in lines['lines']:
+        # Rest wavelength of the spectral line
+        central_wavelength = line[0]
+
+        # Select the spectrum that contains the spectral line
+        wav, flux = select_spectrum(spectra, central_wavelength)
+
+        # Extract the spectral line from the spectrum
+        wav, flux = extract_spectrum_within_range(wav, flux, line[2], line[5])
+        wav_cont, flux_cont = extract_continuum(wav, flux, line[2], line[5], line[3], line[4])
+        wav_line, flux_line = extract_spectrum_within_range(wav, flux, line[3], line[4])
+
+        # Linear fit to continuum
+        cont_fit = np.poly1d(np.polyfit(wav_cont, flux_cont, 1))(wav_cont)
+
+        wav_list.append(wav_cont)
+        flux_list.append(flux_cont)
+        fit_list.append(cont_fit)
+        wav_line_list.append(wav_line)
+        flux_line_list.append(flux_line)
+
+
+    num_plots = len(lines['lines'])
+    num_rows = (num_plots - 1) // 4 + 1  # Calculate the number of rows needed
+
+    fig, axes = plt.subplots(num_rows, 4, figsize=(15, num_rows * 4))
+
+    # Flatten axes if necessary
+    if num_rows == 1:
+        axes = [axes]
+
+    for i, ax_row in enumerate(axes):
+
+        for j, ax in enumerate(ax_row):
+            plot_index = i * 4 + j
+
+            if plot_index < num_plots:
+
+                ax.plot(wav_list[i], flux_list[i], color='blue', label='continuum')  # Plot your data here
+                ax.plot(wav_list[i], fit_list[i], color='orange', label='fit')
+                ax.plot(wav_line_list[i], flux_line_list[i], color='green', label='line')
+                ax.set_title(f"{lines['lines'][i][1]}")
+                ax.legend(fontsize=8)
+
+            else:
+                ax.axis('off')  # Turn off axis for unused subplots
+            
+            if j == 0:
+                ax.set_ylabel('flux', size=12)
+            if i == len(axes) - 1:
+                ax.set_xlabel(r'Wavelength ($\AA$)', size=12)
+
+    plt.tight_layout()
+    plt.show()
+
+    return
+
+
+
+def plot_models_over_lines(spectra:list, models:dict, lines:dict, vrad:float, vsini:float):
+    """
+    Plot the given models over the spectral lines.
+
+    Args:
+        spectra (list): _description_
+        models (dict): _description_
+        lines (dict): _description_
+        vrad (float): _description_
+        vsini (float): _description_
+    """
+    # Make subplots
+    num_plots = len(lines['lines'])
+    num_rows = (num_plots - 1) // 4 + 1  # Calculate the number of rows needed
+    fig, axes = plt.subplots(num_rows, 4, figsize=(15, num_rows * 4))
+    x = 0
+    y = 0
+
+    # Flatten axes if necessary
+    if num_rows == 1:
+        axes = [axes]
+
+    for line in lines['lines']:
+
+        # Rest wavelength of the spectral line
+        central_wavelength = line[0]
+
+        # Select the spectrum that contains the spectral line
+        wav, flux = select_spectrum(spectra, central_wavelength)
+
+        # Extract the spectral line from the spectrum
+        wav, flux = extract_spectrum_within_range(wav, flux, line[2], line[5])
+        wav_cont, flux_cont = extract_continuum(wav, flux, line[2], line[5], line[3], line[4])
+        wav_line, flux_line = extract_spectrum_within_range(wav, flux, line[3], line[4])
+
+        # Linear fit to continuum
+        cont_fit = np.poly1d(np.polyfit(wav_cont, flux_cont, 1))
+        # Normalize spectrum
+        flux /= cont_fit(wav)
+        flux_cont /= cont_fit(wav_cont)
+        flux_line /= cont_fit(wav_line)
+
+        for key, model in models.items():
+            # Extract the line from the model
+            wav_model, flux_model = extract_spectrum_within_range(np.array(model['WAVELENGTH']), np.array(model['FLUX']), line[2], line[5])
+
+            # Dopplershift the model
+            wav_model = doppler_shift_spectrum(wav_model, vrad)
+
+            # Apply doppler broadening
+            wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
+            flux_model = pyasl.rotBroad(wav_model, flux_model, 0.0, vsini)
+
+            # Plot the model
+            axes[x,y].plot(wav_model, flux_model, label=f'{key}')
+
+        axes[x,y].plot(wav, flux, color='blue', alpha=0.5)
+        axes[x,y].plot(wav_line, flux_line, color='orange', alpha=0.5)
+
+
+        # Annotate each line with text vertically
+        axes[x,y].set_title(line[1], fontsize=10)
+        axes[x,y].grid(alpha=0.25)
+
+        if y == 0:
+            axes[x,y].set_ylabel('Normalised Flux', fontsize=12)
+        if x == num_rows - 1:
+            axes[x,y].set_xlabel(r"$\lambda$ ($\AA$)", fontsize=12)
+
+        # Set right plot coordinates
+        if (y + 1) % 4 == 0:
+            x += 1
+            y = 0
+        else:
+            y += 1
+
+    plt.suptitle(f'All models over the lines', fontsize=15)
+    plt.tight_layout()
+    plt.show()
+
+    return
+
+
+
 def lines(object_name:str)->dict:
     """
     Returns a dictionary with the spectral lines and their ranges that
@@ -840,13 +993,13 @@ def lines(object_name:str)->dict:
     _SMCX_1 = {
         'lines': [
             [4713.17, r"He I: 4713.17", 4710, 4713.3, 4719.7, 4724],
-            [4861.33, r"H$\beta$: 4861.33", 4845, 4857, 4869, 4879],
+            [4861.33, r"H$\beta$: 4861.33", 4845, 4860.5, 4869, 4879],
             [4921.93, r"He I: 4921.93", 4915, 4921.3, 4928.9, 4934],
             [5015.68, r"He I: 5015.68", 5010, 5015.5, 5022.5, 5029],
-            [5047.74, r"He I: 5047.74", 5043, 5047.8, 5054.5, 5061],
-            [5411.53, r"He II: 5411.53", 5400, 5408.5, 5418.5, 5424],
+            [5047.74, r"He I: 5047.74", 5043, 5047.8, 5054.5, 5061]
+            # [5411.53, r"He II: 5411.53", 5400, 5408.5, 5418.5, 5424]
             #[5875.66, r"He I: 5875.66", ]
-            [3587.27, r"He I: 3587.27", 3585.5, 3586.7, 3591.8, 3594.2],
+            # [3587.27, r"He I: 3587.27", 3585.5, 3586.7, 3591.8, 3594.2],
             #[4009.26, r"He I: 4009.26", 4005, 4009.25, 4014.8, 4018],
             #[4026.21, r"He I: 4026.21", 4024, 4025.75, 4031.5, 4035]
         ],
@@ -875,8 +1028,21 @@ def lines(object_name:str)->dict:
         'Doppler_guess': -5
     }
 
+    _VelaX_1 = {
+        'lines': [
+            [4009.26, r"He I: 4009.26", 4004, 4006.3, 4011.25, 4013],
+            [4143.76, r"He I: 4143.76", 4139, 4141.5, 4146, 4148],
+            [4088.86, r"Si IV: 4088.86", 4085, 4086.2, 4091, 4093],
+            [4199.83, r"He II: 4199.83", 4197.55, 4198, 4201.6, 4203],
+            [4387.93, r"He I: 4387.93", 4383.8, 4385, 4390.5, 4392.3],
+            [4921.93, r"He I: 4921.93", 4916, 4918.5, 4926, 4932],
+            [5411.53, r"He II: 5411.53", 5406.8, 5409, 5413.75, 5416.5]
+        ],
+        'Doppler_guess': 0.3
+    }
+
     line_dict = {'4U1538-52': _4U1538_52, 'Cen X-3': _CenX_3, 'SMC X-1': _SMCX_1,
-                 '4U1700-37': _4U1700_37, 'LMC X-4': _LMCX_4}
+                 '4U1700-37': _4U1700_37, 'LMC X-4': _LMCX_4, 'Vela X-1': _VelaX_1}
 
     return line_dict[object_name]
 
@@ -911,10 +1077,10 @@ def SignalToNoise(object_name:str)->list:
     """
     SNR_4U1538_52 = [(4000, 9.), (5000, 63.7)]
     SNR_CenX_3 = [(4000, 32.8), (5000, 90.7)]
-    SNR_SMCX_1 = [(4000, 60.1), (5000, 72.9)]
+    SNR_SMCX_1 = [(4000, 50.2), (5000, 69.8)]
     SNR_4U1700_37 = [(3500, 116.1), (4000, 390), (5000, 331.8), (7000, 319.2)]
     SNR_LMCX_4 = [(4000, 59.5), (5000, 64.8)]
-    SNR_VelaX_1 = [(4000), 378.9]
+    SNR_VelaX_1 = [(4000, 378.9)]
 
     SNR = {'4U1538-52': SNR_4U1538_52, 'Cen X-3': SNR_CenX_3, 'SMC X-1': SNR_SMCX_1,
            '4U1700-37': SNR_4U1700_37, 'LMC X-4': SNR_LMCX_4, 'Vela X-1': SNR_VelaX_1}

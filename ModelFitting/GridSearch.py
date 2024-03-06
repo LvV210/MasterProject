@@ -12,16 +12,16 @@ from functions import import_spectra, extract_spectrum_within_range
 SET INITIAL PARAMETERS
 """
 # SET THE NAME OF THE OBJECT YOU WANT TO DO THE GRID SEARCH FOR
-OBJECT_NAME = 'SMC X-1'
-object_ = 'SMCX_1'
+OBJECT_NAME = 'Vela X-1'
+object_ = 'VelaX_1'
 
 # Set the galaxy for the models
-galaxy = 'SMC'
+galaxy = 'Milkyway'
 
 # Grid Search values for vsin(i)
-vsini_start = 100
-vsini_end = 250
-vsini_stepsize = 5
+vsini_start = 50
+vsini_end = 200
+vsini_stepsize = 2
 
 
 """
