@@ -610,8 +610,8 @@ def determine_doppler_shift(spectra: list, lines: dict, guassian: callable, obje
 
         plt.suptitle(f"{object_name}\nRadial velocity: {round(np.mean(doppler_shift), 2)}" + r" $\pm$ " + f"{round(np.std(doppler_shift), 2)}" + r" km $s^{-1}$", size=20)
         plt.tight_layout()
-        plt.show()
         plt.savefig(save)
+        plt.show()
 
     return doppler_shift
 
@@ -711,7 +711,7 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines:dict, SNR:list, 
 
 
 
-def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad:float, vsini:float)->None:
+def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad:float, vsini:float, save=False)->None:
     """
     Plots the best model over the spectrum
 
@@ -786,6 +786,8 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
 
     plt.suptitle(f'Best model of the lines\n{best_model}', fontsize=15)
     plt.tight_layout()
+    if save:
+        plt.savefig(save)
     plt.show()
 
     return
