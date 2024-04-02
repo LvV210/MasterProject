@@ -1,0 +1,35 @@
+Grid Search Information:
+------------------------
+Object: 		 4U1538-52
+Object_ : 		 4U1538_52
+FolderPath: 	 /mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/FitResults/4U1538_52S100E300delta2/
+Galaxy: 		 Milkyway
+
+------------------------
+vsin(i) Start: 		 100
+vsin(i) End: 		 300
+vsin(i) Stepsize: 	 2
+
+------------------------
+GRID SEARCH RESULTS
+The minimum chi-squared: 	 3.3640239961094696
+The best vsin(i): 			 142 km/s
+This is for model: 			 T32000logg3.8
+Radial Velocity: 		 -166.2300897421131
+Radial Velocity error: 	 11.748865314523458
+
+The SNR of the spectra: [(4000, 9.0), (5000, 63.7)]
+The lines examined:
+	H$\gamma$: 4340.46
+	He I: 4387.93
+	He I: 4471.50
+	He I: 4713.17
+	H$\beta$: 4861.33
+	He I: 4921.93
+	He I: 5015.68
+
+The Helium lines used in the grid search:
+	He I: 4713.17
+	He I: 4009.26
+	He I: 5875.66
+	He I: 4026.21
