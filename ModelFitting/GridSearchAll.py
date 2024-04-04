@@ -4,8 +4,8 @@ import pandas as pd
 import sys
 sys.path.append('/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject')
 
-from model_functions import *
-from functions import import_spectra, extract_spectrum_within_range
+from AllModelFunctions import *
+from functions import import_spectra
 
 
 object_names = ['4U1538-52', '4U1700-37', 'Cen X-3', 'SMC X-1', 'LMC X-4', 'Vela X-1']
@@ -71,7 +71,7 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
 
     # The spectral lines that correspond to the object and are used
     # in the model fitting
-    _object_lines = lines(OBJECT_NAME)
+    _object_lines = lines_doppler(OBJECT_NAME)
 
     # Signal-to-noise ratios
     SNR = SignalToNoise(OBJECT_NAME)
@@ -81,7 +81,8 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     RADIAL VELOCITY
     """
     # Determine the radial velocity of the object
-    doppler_shifts = determine_doppler_shift(spectra, _object_lines, gaussian, True, save=(folder_path + new_folder_name + '/' + 'Doppler.png'))
+    doppler_shifts = determine_radial_velocity(spectra, _object_lines, gaussian, True, 
+                                               save=(folder_path + new_folder_name + '/' + 'Doppler.png'))
     vrad = np.mean(doppler_shifts)
     vrad_err = np.std(doppler_shifts)
 
@@ -98,7 +99,7 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     vsini_grid = list(range(vsini_start, vsini_end + 1, vsini_stepsize))
 
     # Get the helium lines for the gridsearch
-    _object_lines_He = lines_small_selection(OBJECT_NAME, vrad)
+    _object_lines_He = lines_model_fit(OBJECT_NAME)
 
     # PERFORM THE GRID SEARCH
     for vsini in vsini_grid:
@@ -185,3 +186,15 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
             file.write(f"\t{line[1]}\n")
 
     print("\nDONE")
+
+
+    """
+    DOING SOME ANALYSIS
+    """
+    # Plot the best model over the data
+    plot_best_model(spectra, models, _object_lines_He, best_model, vrad, vsini_best, 
+                save=(folder_path + new_folder_name + '/' + 'BestModel.png'))
+    
+    # Plot all models over the data
+    plot_models_over_lines(spectra, models, _object_lines_He, vrad, vsini_best, 
+                       (folder_path + new_folder_name + '/' + 'AllModels.png'))

@@ -11,6 +11,7 @@ from scipy.optimize import curve_fit
 from typing import Iterable
 from PyAstronomy import pyasl
 from scipy.interpolate import CubicSpline
+import re
 
 
 """
@@ -38,6 +39,19 @@ def save_name_to_object_name(input_string):
     return modified_string
 
 
+
+def extract_vsini(vsini:str)->int:
+    """
+    Takes a string like 'vsini###'
+    This function extracts the number
+
+    Args:
+        vsini (str): String like 'vsini###'
+
+    Returns:
+        int: The number in the string
+    """
+    return int(re.search(r'\d+$', vsini).group())
 
 
 
@@ -252,7 +266,7 @@ def lines_doppler(object_name:str)->dict:
 
 
 
-def lines_model_fit(object_name:str, vrad: float)->dict:
+def lines_model_fit_old(object_name:str, vrad: float)->dict:
     """
     Returns a dictionary with the spectral lines and their ranges that
     will be used in the model fitting.
@@ -321,7 +335,7 @@ def lines_model_fit(object_name:str, vrad: float)->dict:
         'lines': [
             [4713.17, r"He I: 4713.17", 4708.5, 4709, 4717.35, 4717.85],
             [4009.26, r"He I: 4009.26", 4006, 4006.5, 4012, 4012.5],
-            [5875.66, r"He I: 5875.66", 5867, 5867.5, 5882.5, 5883],
+            # [5875.66, r"He I: 5875.66", 5867, 5867.5, 5882.5, 5883],
             [4026.21, r"He I: 4026.21", 4018.5, 4019, 4031, 4031.5]
         ],
         'Doppler_guess': 0.3
@@ -334,6 +348,87 @@ def lines_model_fit(object_name:str, vrad: float)->dict:
         for line in lines['lines']:
             for i in range(2,6):
                 line[i] += vrad / 3E5 * line[0]
+
+    return line_dict[object_name]
+
+
+
+def lines_model_fit(object_name:str)->dict:
+    """
+    Returns a dictionary with the spectral lines and their ranges that
+    will be used in the model fitting.
+
+    Args:
+        object_name (str): Name of the object you want the lines for.
+
+    Returns:
+        dict: lines: [wavelength, name, continuum left, line left, line right, continuum right]
+              doppler_guess: #
+    """
+    # List with the lines that are appropriate to fit a gauss
+    # lines: [wavelength, name, continuum left, line left, line right, continuum right]
+    _4U1538_52 = {
+        'lines': [
+            [4713.17, r"He I: 4713.17", 4705, 4708, 4713.75, 4715],
+            [4009.26, r"He I: 4009.26", 4003, 4005, 4009, 4011],
+            [5875.66, r"He I: 5875.66", 5865, 5868, 5880, 5883],
+            [4026.21, r"He I: 4026.21", 4018.5, 4022, 4026.4, 4031.5]
+        ],
+        'Doppler_guess': 2.8
+    }
+
+    _CenX_3 = {
+        'lines': [
+            [4713.17, r"He I: 4713.17", 4707, 4709, 4718, 4720],
+            [4009.26, r"He I: 4009.26", 4006, 4007, 4012, 4012.5],
+            [5875.66, r"He I: 5875.66", 5867, 5870, 5880, 5881],
+            [4026.21, r"He I: 4026.21", 4020, 4022, 4030, 4031.5]
+        ],
+        'Doppler_guess': 0
+    }
+
+    _SMCX_1 = {
+        'lines': [
+            [4713.17, r"He I: 4713.17", 4710, 4713, 4719.5, 4721],
+            [4009.26, r"He I: 4009.26", 4007, 4009, 4014.5, 4016],
+            [5875.66, r"He I: 5875.66", 5874, 5875.5, 5883.25, 5885],
+            [4026.21, r"He I: 4026.21", 4022.5, 4025, 4032.5, 4034]
+        ],
+        'Doppler_guess': -2.8
+    }
+
+    _4U1700_37 = {
+        'lines': [
+            [4713.17, r"He I: 4713.17", 4708.5, 4709, 4715.5, 4717],
+            [4009.26, r"He I: 4009.26", 4005, 4006, 4011, 4012],
+            # [5875.66, r"He I: 5875.66", 5867, 5867.5, 5882.5, 5883],
+            [4026.21, r"He I: 4026.21", 4017.5, 4020, 4028, 4030]
+        ],
+        'Doppler_guess': 0.6
+    }
+
+    _LMCX_4 = {
+        'lines': [
+            [4713.17, r"He I: 4713.17", 4708.5, 4709, 4717.35, 4717.85],
+            [4009.26, r"He I: 4009.26", 4010, 4011, 4016, 4017],
+            [5875.66, r"He I: 5875.66", 5874, 5877.5, 5888, 5889.5],
+            [4026.21, r"He I: 4026.21", 4022.5, 4025, 4034.5, 4036]
+        ],
+        'Doppler_guess': -5
+    }
+
+    _VelaX_1 = {
+        'lines': [
+            [4713.17, r"He I: 4713.17", 4708.5, 4711, 4715, 4717],
+            [4009.26, r"He I: 4009.26", 4006, 4006.5, 4012, 4013],
+            # [5875.66, r"He I: 5875.66", 5867, 5867.5, 5882.5, 5883],
+            [4026.21, r"He I: 4026.21", 4018.5, 4020, 4030, 4031.5]
+        ],
+        'Doppler_guess': 0.3
+    }
+
+    line_dict = {'4U1538-52': _4U1538_52, 'Cen X-3': _CenX_3, 'SMC X-1': _SMCX_1,
+                 '4U1700-37': _4U1700_37, 'LMC X-4': _LMCX_4, 'Vela X-1': _VelaX_1}
 
     return line_dict[object_name]
 
@@ -706,3 +801,88 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
 
 
 
+def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, vsini:float, save=False)->None:
+    """
+    Plots the best model over the spectrum
+
+    Args:
+        spectra (list): Spectrum of the object (UVES)
+        models (dict): All models
+        lines (dict): List with all lines and their ranges
+        best_model (str): Model with the lowest chi-squared
+        vrad (float): Radial velocity (km/s)
+        vsini (float): vsin(i) (km/s)
+    """
+    lines = lines['lines']
+
+    num_plots = len(lines)
+    num_rows = (num_plots - 1) // 4 + 1  # Calculate the number of rows needed
+
+    fig, axes = plt.subplots(num_rows, 4, figsize=(15, num_rows * 4))
+
+    # Flatten axes if necessary
+    if num_rows == 1:
+        axes = [axes]
+
+    for i, ax_row in enumerate(axes):
+
+        for j, ax in enumerate(ax_row):
+            plot_index = i * 4 + j
+
+            if plot_index < num_plots:
+
+                # Rest wavelength of the spectral line
+                central_wavelength = lines[plot_index][0]
+
+                # Select the spectrum that contains the spectral line
+                wav, flux = select_spectrum(spectra, central_wavelength)
+
+                # Extract the spectral line from the spectrum
+                wav, flux = extract_spectrum_within_range(wav, flux, lines[plot_index][2], lines[plot_index][5])
+                wav_cont, flux_cont = extract_continuum(wav, flux, lines[plot_index][2], lines[plot_index][5], 
+                                                        lines[plot_index][3], lines[plot_index][4])
+                wav_line, flux_line = extract_spectrum_within_range(wav, flux, lines[plot_index][3], lines[plot_index][4])
+
+
+                # Linear fit to continuum
+                cont_fit = np.poly1d(np.polyfit(wav_cont, flux_cont, 1))
+                # Normalize spectrum
+                flux /= cont_fit(wav)
+                flux_cont /= cont_fit(wav_cont)
+                flux_line /= cont_fit(wav_line)
+
+
+                # Plot all models
+                for key, model in models.items():
+                    # Extract the line from the model
+                    wav_model = model['WAVELENGTH']
+                    flux_model = model['FLUX']
+                    # Dopplershift the model
+                    wav_model = doppler_shift_spectrum(wav_model, vrad)
+                    wav_model, flux_model = extract_spectrum_within_range(np.array(wav_model), np.array(flux_model), 
+                                                                        lines[plot_index][2], lines[plot_index][5])
+
+                    # Apply doppler broadening
+                    wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
+                    flux_model = pyasl.rotBroad(wav_model, flux_model, 0.0, vsini)
+
+                    # Plot model
+                    ax.plot(wav_model, flux_model)
+
+
+                ax.plot(wav, flux, color='blue', alpha=0.5)
+                ax.plot(wav_line, flux_line, color='orange', alpha=0.5)
+
+                # Annotate each line with text vertically
+                ax.set_title(lines[plot_index][1], fontsize=10)
+                ax.grid(alpha=0.25)
+
+    plt.suptitle('All models', fontsize=15)
+    plt.tight_layout()
+
+    if save:
+        plt.savefig(save)
+
+    plt.show()
+
+    return
