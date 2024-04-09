@@ -1,0 +1,34 @@
+Grid Search Information:
+------------------------
+Object: 		 Vela X-1
+Object_ : 		 VelaX_1
+FolderPath: 	 /mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/FitResults/VelaX_1S100E300delta2/
+Galaxy: 		 Milkyway
+
+------------------------
+vsin(i) Start: 		 100
+vsin(i) End: 		 300
+vsin(i) Stepsize: 	 2
+
+------------------------
+GRID SEARCH RESULTS
+The minimum chi-squared: 	 21.878153166806598
+The best vsin(i): 			 104 km/s
+This is for model: 			 T30000logg3.6
+Radial Velocity: 		 -19.205790239773457
+Radial Velocity error: 	 0.0
+
+The SNR of the spectra: [(4000, 378.9)]
+The lines examined:
+	He I: 4009.26
+	He I: 4143.76
+	Si IV: 4088.86
+	He II: 4199.83
+	He I: 4387.93
+	He I: 4921.93
+	He II: 5411.53
+
+The Helium lines used in the grid search:
+	He I: 4713.17
+	He I: 4009.26
+	He I: 4026.21

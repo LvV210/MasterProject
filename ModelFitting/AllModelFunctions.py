@@ -55,6 +55,57 @@ def extract_vsini(vsini:str)->int:
 
 
 
+def extract_temperature_and_gravity(model_name):
+    """
+    Takes a string as input like T####logg####
+    and returns the 2 numbers.
+    """
+    # Define the regular expression pattern
+    pattern = r"T(\d+)logg([\d.]+)"
+    
+    # Match the pattern in the model name
+    match = re.match(pattern, model_name)
+    
+    if match:
+        temperature = int(match.group(1))
+        gravity = float(match.group(2))
+        return temperature, gravity
+    else:
+        return None, None
+
+
+
+def models_in_interval(models: dict, T1: int, T2: int, log_g1: float, log_g2: float)->dict:
+    """
+    Gives back a dictionary with only the models in the given T,
+    log(g) range.
+
+    Args:
+        models (dict): Dictionary of all models
+        T1 (int): Start T interval
+        T2 (int): End T interval
+        log_g1 (float): Start log(g) interval
+        log_g2 (float): End log(g) interval
+
+    Returns:
+        dict: All models in the given T,log(g) range
+    """
+
+    # Get all Teff, log(g) combinations
+    available_Teff_logg = []
+    for model in models.values():
+        available_Teff_logg.append((model['Teff'], model['log(g)']))
+
+    # Filter only models in the given interval
+    filtered_Teff_logg = [f'T{Teff}logg{log_g}' for (Teff, log_g) in available_Teff_logg if T1 <= Teff <= T2 and log_g1 <= log_g <= log_g2]
+
+    # Make dictionary with models in given interval
+    filtered_models = {key: models[key] for key in filtered_Teff_logg if key in models}
+
+    return filtered_models
+
+
+
 """
 FUNCTIONS TO APPLY ON SPECTRA
 """
@@ -609,7 +660,6 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines:dict, SNR:list, 
     chi2_perline = {}
 
     for key, model in models.items():
-        print(f"\rIteration {key}", end='', flush=True)
         # Chi-squared parameter
         chi2[key] = 0
         # Chi-squared per line
@@ -789,7 +839,7 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
                 ax.set_title(lines[plot_index][1], fontsize=10)
                 ax.grid(alpha=0.25)
 
-    plt.suptitle(f'Best model of the lines\n{best_model}', fontsize=15)
+    plt.suptitle(f'Best model: {best_model}', fontsize=15)
     plt.tight_layout()
 
     if save:
@@ -801,7 +851,7 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
 
 
 
-def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, vsini:float, save=False)->None:
+def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, vsini:float, best_model:str, save=False)->None:
     """
     Plots the best model over the spectrum
 
@@ -816,9 +866,9 @@ def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, v
     lines = lines['lines']
 
     num_plots = len(lines)
-    num_rows = (num_plots - 1) // 4 + 1  # Calculate the number of rows needed
+    num_rows = (num_plots - 1) // 3 + 1  # Calculate the number of rows needed
 
-    fig, axes = plt.subplots(num_rows, 4, figsize=(15, num_rows * 4))
+    fig, axes = plt.subplots(num_rows, 3, figsize=(15, num_rows * 5))
 
     # Flatten axes if necessary
     if num_rows == 1:
@@ -827,7 +877,7 @@ def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, v
     for i, ax_row in enumerate(axes):
 
         for j, ax in enumerate(ax_row):
-            plot_index = i * 4 + j
+            plot_index = i * 3 + j
 
             if plot_index < num_plots:
 
@@ -866,8 +916,11 @@ def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, v
                     wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
                     flux_model = pyasl.rotBroad(wav_model, flux_model, 0.0, vsini)
 
-                    # Plot model
-                    ax.plot(wav_model, flux_model)
+                    if key == best_model and max(flux_model) < 5:
+                        # Plot model
+                        ax.plot(wav_model, flux_model, label=f'Best: {key}', color='black', linestyle='--')
+                    elif max(flux_model) < 5:
+                        ax.plot(wav_model, flux_model, label=f'{key}')
 
 
                 ax.plot(wav, flux, color='blue', alpha=0.5)
@@ -876,6 +929,9 @@ def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, v
                 # Annotate each line with text vertically
                 ax.set_title(lines[plot_index][1], fontsize=10)
                 ax.grid(alpha=0.25)
+
+                if len(models) < 10:
+                    ax.legend(fontsize=8)
 
     plt.suptitle('All models', fontsize=15)
     plt.tight_layout()

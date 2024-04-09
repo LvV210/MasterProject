@@ -8,11 +8,11 @@ from AllModelFunctions import *
 from functions import import_spectra
 
 
-object_names = ['4U1538-52', '4U1700-37', 'Cen X-3', 'SMC X-1', 'LMC X-4', 'Vela X-1']
+object_names = ['SMC X-1', 'LMC X-4', 'Vela X-1']
 # object_names = ['Vela X-1']
-object_saves = ['4U1538_52', '4U1700_37', 'CenX_3', 'SMCX_1', 'LMCX_4', 'VelaX_1']
+object_saves = ['SMCX_1', 'LMCX_4', 'VelaX_1']
 # object_saves = ['VelaX_1']
-galaxies = ['Milkyway', 'Milkyway', 'Milkyway', 'SMC', 'LMC', 'Milkyway']
+galaxies = ['SMC', 'LMC', 'Milkyway']
 # galaxies = ['Milkyway']
 
 
@@ -81,8 +81,7 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     RADIAL VELOCITY
     """
     # Determine the radial velocity of the object
-    doppler_shifts = determine_radial_velocity(spectra, _object_lines, gaussian, True, 
-                                               save=(folder_path + new_folder_name + '/' + 'Doppler.png'))
+    doppler_shifts = determine_radial_velocity(spectra, _object_lines, gaussian, OBJECT_NAME)
     vrad = np.mean(doppler_shifts)
     vrad_err = np.std(doppler_shifts)
 
@@ -191,10 +190,10 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     """
     DOING SOME ANALYSIS
     """
-    # Plot the best model over the data
-    plot_best_model(spectra, models, _object_lines_He, best_model, vrad, vsini_best, 
-                save=(folder_path + new_folder_name + '/' + 'BestModel.png'))
+    # # Plot the best model over the data
+    # plot_best_model(spectra, models, _object_lines_He, best_model, vrad, vsini_best, 
+    #             save=(folder_path + new_folder_name + '/' + 'BestModel.png'))
     
-    # Plot all models over the data
-    plot_models_over_lines(spectra, models, _object_lines_He, vrad, vsini_best, 
-                       (folder_path + new_folder_name + '/' + 'AllModels.png'))
+    # # Plot all models over the data
+    # plot_models_over_lines(spectra, models, _object_lines_He, vrad, vsini_best, 
+    #                    (folder_path + new_folder_name + '/' + 'AllModels.png'))
