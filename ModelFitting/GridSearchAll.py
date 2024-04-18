@@ -8,11 +8,14 @@ from AllModelFunctions import *
 from functions import import_spectra
 
 
-object_names = ['SMC X-1', 'LMC X-4', 'Vela X-1']
+object_names = ['Vela X-1', 'Cen X-3', '4U1538-52', '4U1700-37']
+# 'SMC X-1', 'LMC X-4', 
 # object_names = ['Vela X-1']
-object_saves = ['SMCX_1', 'LMCX_4', 'VelaX_1']
+object_saves = ['VelaX_1', 'CenX_3', '4U1538_52', '4U1700_37']
+# 'SMCX_1', 'LMCX_4'
 # object_saves = ['VelaX_1']
-galaxies = ['SMC', 'LMC', 'Milkyway']
+galaxies = ['Milkyway', 'Milkyway', 'Milkyway', 'Milkyway']
+# 'SMC', 'LMC', 
 # galaxies = ['Milkyway']
 
 
@@ -30,8 +33,8 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     galaxy = current_galaxy
 
     # Grid Search values for vsin(i)
-    vsini_start = 100
-    vsini_end = 300
+    vsini_start = 60
+    vsini_end = 260
     vsini_stepsize = 2
 
     print(f"Current: {OBJECT_NAME} {galaxy}")
