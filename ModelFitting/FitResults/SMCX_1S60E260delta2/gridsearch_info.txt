@@ -12,9 +12,9 @@ vsin(i) Stepsize: 	 2
 
 ------------------------
 GRID SEARCH RESULTS
-The minimum chi-squared: 	 2.133103621074426
-The best vsin(i): 			 144 km/s
-This is for model: 			 T35000logg4.4
+The minimum chi-squared: 	 3.187938811316013
+The best vsin(i): 			 150 km/s
+This is for model: 			 T31000logg3.2
 Radial Velocity: 		 188.21472561163247
 Radial Velocity error: 	 0.0
 
@@ -31,4 +31,6 @@ The Helium lines used in the grid search:
 	He I: 4009.26
 	He II: 5411.53
 	He I: 4713.17
+	H$\gamma$: 4340.46
+	He II: 4686
 	He I: 5015.68
