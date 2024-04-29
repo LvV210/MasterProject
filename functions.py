@@ -259,6 +259,8 @@ def interpolate(df2: pd.DataFrame, spectral_type: str, quantity: str, plot: bool
     # Get the short spectral type and luminosity class
     spectral_type_short, luminosity_class = decompose_spectral_type(spectral_type)
 
+    # print(f"Quantity: {quantity} \nSpectral type: {spectral_type} --> {spectral_type_short}  {luminosity_class}")
+
     # Make a new column with luminosity class
     df['luminosity_class'] = df['ST'].apply(decompose_spectral_type).apply(lambda x: x[1])
 
@@ -277,6 +279,7 @@ def interpolate(df2: pd.DataFrame, spectral_type: str, quantity: str, plot: bool
     target_number = extract_number_from_spectral_type(spectral_type_short)
     interpolated_value = interpolate_value(spectral_type_values=quantity_values, spectral_type_numbers=spectral_type_numbers, target_number=target_number)
 
+    # print(f"Value from table: {interpolated_value}\n")
     if plot:
         plt.plot(spectral_type_numbers, quantity_values, color='blue')
         plt.scatter([target_number], [interpolated_value], color='orange')
