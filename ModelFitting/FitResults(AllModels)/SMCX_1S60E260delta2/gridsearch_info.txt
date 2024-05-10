@@ -1,0 +1,36 @@
+Grid Search Information:
+------------------------
+Object: 		 SMC X-1
+Object_ : 		 SMCX_1
+FolderPath: 	 /mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/FitResults/SMCX_1S60E260delta2/
+Galaxy: 		 SMC
+
+------------------------
+vsin(i) Start: 		 60
+vsin(i) End: 		 260
+vsin(i) Stepsize: 	 2
+
+------------------------
+GRID SEARCH RESULTS
+The minimum chi-squared: 	 3.187938811316013
+The best vsin(i): 			 150 km/s
+This is for model: 			 T31000logg3.2
+Radial Velocity: 		 188.21472561163247
+Radial Velocity error: 	 0.0
+
+The SNR of the spectra: [(4000, 50.2), (5000, 69.8)]
+The lines examined:
+	He I: 4713.17
+	H$\beta$: 4861.33
+	He I: 4921.93
+	He I: 5015.68
+	He I: 5047.74
+
+The Helium lines used in the grid search:
+	He I: 4713.17
+	He I: 4009.26
+	He II: 5411.53
+	He I: 4713.17
+	H$\gamma$: 4340.46
+	He II: 4686
+	He I: 5015.68

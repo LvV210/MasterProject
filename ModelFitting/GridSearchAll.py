@@ -8,12 +8,12 @@ from AllModelFunctions import *
 from functions import import_spectra
 
 
-# object_names = ['SMC X-1', 'LMC X-4', 'Vela X-1', 'Cen X-3', '4U1538-52', '4U1700-37']
-object_names = ['4U1538-52', '4U1700-37']
-# object_saves = ['SMCX_1', 'LMCX_4', 'VelaX_1', 'CenX_3', '4U1538_52', '4U1700_37']
-object_saves = ['4U1538_52', '4U1700_37']
-# galaxies = ['SMC', 'LMC', 'Milkyway', 'Milkyway', 'Milkyway', 'Milkyway']
-galaxies = ['Milkyway', 'Milkyway']
+object_names = ['SMC X-1', 'LMC X-4', 'Vela X-1', 'Cen X-3', '4U1538-52', '4U1700-37']
+# object_names = ['4U1538-52', '4U1700-37']
+object_saves = ['SMCX_1', 'LMCX_4', 'VelaX_1', 'CenX_3', '4U1538_52', '4U1700_37']
+# object_saves = ['4U1538_52', '4U1700_37']
+galaxies = ['SMC', 'LMC', 'Milkyway', 'Milkyway', 'Milkyway', 'Milkyway']
+# galaxies = ['Milkyway', 'Milkyway']
 
 
 for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
@@ -65,13 +65,22 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     spectra = import_spectra(object_)
     print('SPECTRA IMPORTED')
 
+
     # Import models for given galaxy
     models = import_models_quickload(galaxy)
     print('MODELS IMPORTED')
+    # Calculate log(g)[cgs]
+    df_AllParams = pd.read_csv("/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/tables/results/ALLPARAMETERS.csv")
+    df_AllParams['logg'] = (np.log10(df_AllParams.Mopt * M_sun.value * G.value * 100 ** 3 / (df_AllParams.Ropt * R_sun.value * 100)**2))
+    logg = round(df_AllParams[['id', 'logg']].loc[df_AllParams['id'] == OBJECT_NAME]['logg'].reset_index(drop=True).at[0], 1)
+    # Filter models around log(g)
+    models = models_in_interval(models, T1=0, T2=100000, log_g1=logg-0.2, log_g2=logg+0.2)
+
 
     # The spectral lines that correspond to the object and are used
     # in the model fitting
     _object_lines = lines_doppler(OBJECT_NAME)
+
 
     # Signal-to-noise ratios
     SNR = SignalToNoise(OBJECT_NAME)
