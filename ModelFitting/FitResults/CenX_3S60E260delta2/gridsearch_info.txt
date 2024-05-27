@@ -12,9 +12,9 @@ vsin(i) Stepsize: 	 2
 
 ------------------------
 GRID SEARCH RESULTS
-The minimum chi-squared: 	 5.8240278107339005
-The best vsin(i): 			 208 km/s
-This is for model: 			 T38000logg3.8
+The minimum chi-squared: 	 3.6505234444164425
+The best vsin(i): 			 212 km/s
+This is for model: 			 T29000logg3.2
 Radial Velocity: 		 -0.6333427056022168
 Radial Velocity error: 	 0.0
 

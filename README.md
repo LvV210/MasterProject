@@ -26,3 +26,6 @@ plt.savefig("/mnt/c/Users/luukv/OneDrive/Masterproject/plots/NAME.png")
 
 ### Catalog search UBV?
 [link](https://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/w3browse.pl)
+
+### A DIGITAL SPECTRAL CLASSIFICATION ATLAS
+[link](https://ned.ipac.caltech.edu/level5/Gray/frames.html)
