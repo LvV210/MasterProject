@@ -8,7 +8,7 @@ def supergiant_stellar_parameters():
 
 
 def HMXB_parameters():
-    return pd.read_excel('../tables/HMXBparameters.xlsx', header=0, na_values=None)
+    return pd.read_excel('/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/tables/HMXBparameters.xlsx', header=0, na_values=None)
 
 
 def HMXB_parameters_Kaper():
@@ -231,8 +231,8 @@ def BailerJones():
     Change distances to LMC and SMC
     """
     # Import
-    BJ = pd.read_csv('../tables/BailerJonesDistances.csv', sep=',', header=0, na_values=None)
-    ID = pd.read_excel('../tables/id_converter.xlsx')
+    BJ = pd.read_csv('/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/tables/BailerJonesDistances.csv', sep=',', header=0, na_values=None)
+    ID = pd.read_excel('/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/tables/id_converter.xlsx')
     # Merge
     BJ['source_id'] = BJ["source_id"].astype(np.int64)
     ID['source_id'] = ID["source_id"].astype(np.int64)
