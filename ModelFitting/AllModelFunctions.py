@@ -866,7 +866,9 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
                 ax.plot(wav_model, flux_model, color='green')
 
                 # Annotate each line with text vertically
-                ax.set_title(lines[plot_index][1], fontsize=10)
+                ax.set_xlabel(r"Wavelength ($\AA$)", fontsize=12)
+                ax.set_ylabel(r"Normalised flux", fontsize=12)
+                ax.set_title(lines[plot_index][1], fontsize=12)
                 ax.grid(alpha=0.25)
 
     plt.suptitle(f'Best model: {best_model}', fontsize=15)
@@ -957,7 +959,9 @@ def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, v
                 ax.plot(wav_line, flux_line, color='orange', alpha=0.5)
 
                 # Annotate each line with text vertically
-                ax.set_title(lines[plot_index][1], fontsize=10)
+                ax.set_xlabel(r"Wavelength ($\AA$)", fontsize=12)
+                ax.set_ylabel("Normalised flux", fontsize=12)
+                ax.set_title(lines[plot_index][1], fontsize=12)
                 ax.grid(alpha=0.25)
 
                 if len(models) < 10:
