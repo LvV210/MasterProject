@@ -3,41 +3,30 @@
 
 ### **Binary System**
 - Object name:          Cen X-3
-- Distance(kpc):        $6752.4946_{6297.3564}^{7431.1533}$  ([[BailerJones2021.pdf]])
-
-
-### **Coordinates**
-- RA(deg):          170.3128552789008 $\pm$ 0.0116339
-- DE(deg):          -60.62377582639316 $\pm$ 0.011172204
+- Distance(kpc):        $6752.4946_{455.1382000000003}^{678.6587}$  ([[BailerJones2021.pdf]])
 
 
 ### **Optical counterpart**
-- GAIA DR3 name:        5337498593446516480
-- Spectral Type:        O6.5III   (Source: Van der Meer et al. (2007))
+- GAIA DR3 name:        Cen X-3
+- Spectral Type:        O6.5III
 
-- J(mag):           nan
-- H(mag):           nan
-- K(mag):           nan
-- JHKerr(mag):      0.03
-- JHKref:           [[2MASS]]
-
-- Teff(K):          35895.0 $\pm$ 1446 [[Martins2005a.pdf]]
+- Teff(K):          34500 $\pm$ error [[Martins2005a.pdf]]
 - Teff(K):          TODO [[Model Fitting]]
 
-- Mass($M_{\odot}$):               24.0 $\pm$ 1.0 [[Falenga2015.pdf]]
-- Mass BONNSAI($M_{\odot}$):       46.4 $\pm$ 5.3 [[BONNSAI models]]
-- Mass HRD($M_{\odot}$)            48
+- Mass($M_{\odot}$):               24 $\pm$ 1 [[Falenga2015.pdf]]
+- Mass HRD($M_{\odot}$)            29
 
-- Luminosity($L_{\odot}$):         $584693.8032751073_{97415.100870027}^{130729.428234661}$ [[Luminosity]]
-- L X-ray($erg$ $s^{-1}$):          2.1068324565385466e+38
+- Luminosity($L_{\odot}$):         $198668.26_{33701.33}^{44869.45}$ [[Luminosity]]
+- L X-ray($erg$ $s^{-1}$):          5e+37
 
 - Radius($R_{\odot}$):                 11.4 [[Falenga2015.pdf]]
-- Radius$_{eff}$($R_{\odot}$):           $19.7719494330861_{2.29140374361602}^{2.72458215993803}$ [[Radius]]
+- Radius$_{eff}$($R_{\odot}$):           $12.4761106049604_{1.28174948957142}^{1.58367109395482}$ [[Radius]]
 - Roche-lobe Radius($R_{\odot}$)       12.726 $\pm$ 0.3229674906240564 [[Falenga2015.pdf]] [[Radius]]
 
 
 ### **Compact object**
 - Radius($R_{\odot}$):             TODO
 - Mass ($M_{\odot}$):              1.57 $\pm$ 0.16 [[Falenga2015.pdf]]
-- Orbital period[d]:        2.087113936
+- Orbital period[d]:        2.08704106 $\pm$ 0    3.000000e-08
+Name: Porb,ecl_error, dtype: float64
 - Spin period[s]            4.8
