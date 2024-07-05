@@ -944,3 +944,47 @@ def vandermeer_lines(element:str =None)->list:
         return other
     if element == None:
         return balmer + helium1 + other
+    
+
+
+def important_spectral_lines()->list:
+    """
+    List of important spectral lines with their name and wavelengths
+
+    Returns:
+        list: list of spectral lines
+    """
+
+    spectral_lines: list = [
+        (4026, "He I + II 4026"),
+        (4200, "He II 4200"),
+        (4634, "N III 4634-40-42 (emission)"),
+        (4686, "He II 4686"),
+        (4144, "He I: 4144"),
+        (4388, "He I: 4388"),
+        (4541, "He II 4541"),
+        (4552, "Si II 4552"),
+        (4686, "He II 4686"),
+        (4861, r"H$\beta$: 4861"),
+        (5016, "He I: 5016"),
+        (5876, "He I: 5876"),
+        (5890, "Na I 5890"),
+        (5896, "Na I 5896"),
+        (6527, "He II 6527"),
+        (6563, "Ha 6563"),
+        (4471, "He I: 4471"),
+        (4058, "N IV 4058"),
+        (4116, "Si IV 4116"),
+        (4097, "N III 4097"),
+        (4504, "Si IV 4686-4504"),
+        (4713, "He I: 4713"),
+        (4187, "C III 4187"),
+        (4121, "He I: 4121"),
+        (3995, "N II 3995"),
+        (4350, "O II 4350"),
+        (4128, "Si I 4128-30"),
+        (4481, "Mg II 4481"),
+        (4233, "Fe II 4233"),
+    ]
+
+    return spectral_lines
