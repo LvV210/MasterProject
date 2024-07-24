@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from IPython.display import Markdown as md
 from tabulate import tabulate
 from astropy.constants import R_sun, L_sun, sigma_sb, G, M_sun
@@ -183,6 +184,41 @@ def extract_continuum(wavelengths: np.array, flux: np.array, start: float, end: 
 """
 IMPORT FUNCTIONS
 """
+def import_spectra(object: str):
+
+    try:
+        # Path to root folder
+        folder_path = f"../Spectra/{object}/"
+        # Get a list of all files in the folder
+        all_files = os.listdir(folder_path)
+
+    except FileNotFoundError:
+        # Path to root folder
+        folder_path = f"/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/Spectra/{object}/"
+        # Get a list of all files in the folder
+        all_files = os.listdir(folder_path)
+
+    # Filter files that start with "ADP"
+    adp_files = [file for file in all_files if file.startswith("ADP")]
+    # Gather the spectra
+    spectra = []
+    for file in adp_files:
+        data = fits.getdata(folder_path + file)
+
+        # Not all spectra have a FLUX, so instead import the FLUX_REDUCED
+        try:
+            flux = np.array(data['FLUX'][0])
+        except KeyError:
+            flux = np.array(data['FLUX_REDUCED'][0])
+            print(f"Spectrum for {object} is FLUX REDUCED")
+
+        wavelength = np.array(data['WAVE'][0])
+        spectra.append((wavelength, flux))
+
+    return spectra
+
+
+
 def import_models_quickload(galaxy:str)->dict:
     """
     Imports all models for a given galaxy
