@@ -3,29 +3,31 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import os
+import shutil
 import json
 from scipy.interpolate import UnivariateSpline
 
 
 
-LINES = {'Ha': 6562.79,
+LINES = {
+        'Ha': 6562.79,
          'Hb': 4861.35,
          'Hg': 4340.47,
          'Hd': 4101.73,
-         'He': 3970.08,
-         'Hf': 3889.06,
-         'Hn': 3835.4,
+        #  'He': 3970.08,
+        #  'Hf': 3889.06,
+        #  'Hn': 3835.4,
          'HeI_5875.66': 5875.66,
          'HeI_4471.50': 4471.5,
-         'HeI_4026.21': 4026.21,
-         'HeI_3819.62': 3819.62,
-         'HeI_3705.02': 3705.02,
-         'HeI_3634.25': 3634.25,
-         'HeI_3587.27': 3587.27,
+        #  'HeI_4026.21': 4026.21,
+        #  'HeI_3819.62': 3819.62,
+        #  'HeI_3705.02': 3705.02,
+        #  'HeI_3634.25': 3634.25,
+        #  'HeI_3587.27': 3587.27,
          'HeI_4921.93': 4921.93,
-         'HeI_4387.93': 4387.93,
-         'HeI_4143.76': 4143.76,
-         'HeI_4009.26': 4009.26,
+        #  'HeI_4387.93': 4387.93,
+        #  'HeI_4143.76': 4143.76,
+        #  'HeI_4009.26': 4009.26,
          'HeI_4713.17': 4713.17,
          'HeI_5015.68': 5015.68,
          'HeI_5047.74': 5047.74,
@@ -71,11 +73,11 @@ class SpectrumSelector:
             self.selecting_continuum = True
             self.ax.set_title('Click to select intervals, press "0" for continuum, "1" for line\nActive: CONTINUUM')
 
-            print("Switched to selecting continuum intervals.")
+            print("\tSwitched to selecting continuum intervals.")
         elif event.key == '1':
             self.selecting_continuum = False
             self.ax.set_title('Click to select intervals, press "0" for continuum, "1" for line\nActive: LINE')
-            print("Switched to selecting line intervals.")
+            print("\tSwitched to selecting line intervals.")
 
 
 
@@ -108,7 +110,7 @@ class SpectrumSelector:
                     label = 'Line'
 
                 # Mark the selected interval on the plot
-                print(f"Selected {label} interval: {round(interval[0][1], 2)} to {round(interval[1][1], 2)}")
+                print(f"\tSelected {label} interval: {round(interval[0][1], 2)} to {round(interval[1][1], 2)}")
                 self.ax.plot(self.wav[interval[0][0]:interval[1][0]], self.flux[interval[0][0]:interval[1][0]], color=color, linestyle='--', label=label)
 
                 # Reset the temporary point
@@ -250,64 +252,89 @@ class SpectrumSelector:
 if __name__ == "__main__":
 
     # Initialize
-    object_ = 'CenX_3'
-    line_label = 'HeI_3705.02'
-    folder_path = f"/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/Lines/{object_}/{line_label}"
+    object_ = 'SMCX_1'
+    not_satisfied = []
 
-    if os.path.exists(folder_path) == False and os.path.isdir(folder_path) == False:
-        os.mkdir(folder_path)
-        os.mkdir(folder_path + '/Plots')
+    for line_label, line_wav in LINES.items():
+        print(f"{line_label}")
+        folder_path = f"/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/Lines/{object_}/{line_label}"
 
+        if os.path.exists(folder_path) == True and os.path.isdir(folder_path) == True:
+            print(f"\tLine Already EXISTS")
 
-        line_wav = LINES[line_label]
-        wav, flux = select_spectrum(import_spectra(object_), line_wav)
-        # Initialize selector
-        selector = SpectrumSelector(wav, flux, line_label, line_wav, folder_path)
+        elif os.path.exists(folder_path) == False and os.path.isdir(folder_path) == False:
+            # Make folder for LINE
+            os.mkdir(folder_path)
+            os.mkdir(folder_path + '/Plots')
 
-        selector.select_intervals()
-
-
-        selected_intervals = selector.get_selected_intervals()
-        print("Selected continuum intervals (index, x):", selected_intervals['continuum_intervals'])
-        print("Selected line intervals (index, x):", selected_intervals['line_intervals'])
+            # Get spectrum containing the LINE
+            wav, flux = select_spectrum(import_spectra(object_), line_wav)
 
 
-        selector.plot_intervals()
+            """
+            START SELECTION
+            """
+            # Initialize selector
+            selector = SpectrumSelector(wav, flux, line_label, line_wav, folder_path)
+
+            selector.select_intervals()
 
 
-        # Ask user if the intervals are satisfactory
-        AreYouSatisfied = input("Are the intervals correct (y/n)?")
-
-        while AreYouSatisfied != 'y' and AreYouSatisfied != 'Y' and AreYouSatisfied != 'n' and AreYouSatisfied != 'N':
-            if AreYouSatisfied == 'y' or AreYouSatisfied == 'Y':
-                print("That is good to hear")
-            elif AreYouSatisfied == 'n' or AreYouSatisfied == 'N':
-                sys.exit("Re-run programm to get better intervals")
-            else:
-                # For wrong input
-                print("WRONG INPUT")
-                AreYouSatisfied =  input("Are the intervals correct (y/n)?")
+            selected_intervals = selector.get_selected_intervals()
+            # print("Selected continuum intervals (index, x):", selected_intervals['continuum_intervals'])
+            # print("Selected line intervals (index, x):", selected_intervals['line_intervals'])
 
 
-        selector.normalize_interval()
+            selector.plot_intervals()
 
 
-        AreYouSatisfied = input("Is te normalization done correctly?")
+            # Ask user if the intervals are satisfactory
+            AreYouSatisfied = input("Are the intervals correct (y/n)?")
 
-        while AreYouSatisfied != 'y' and AreYouSatisfied != 'Y' and AreYouSatisfied != 'n' and AreYouSatisfied != 'N':
-            if AreYouSatisfied == 'y' or AreYouSatisfied == 'Y':
-                print("That is good to hear")
-            elif AreYouSatisfied == 'n' or AreYouSatisfied == 'N':
-                # Not satisfied --> Redo normalization
-                selector = SpectrumSelector(wav, flux, line_label, line_wav, 
-                                            "/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/Lines/4U1538-52")
-                selector.select_intervals()
-                selector.normalize_interval()
-                AreYouSatisfied = input("Is te normalization done correctly?")
-            else:
-                # For wrong input
-                print("WRONG INPUT")
-                AreYouSatisfied =  input("Are the intervals correct (y/n)?")
+            while AreYouSatisfied != 'y' and AreYouSatisfied != 'Y' and AreYouSatisfied != 'n' and AreYouSatisfied != 'N':
+                if AreYouSatisfied == 'y' or AreYouSatisfied == 'Y':
+                    print("\tThat is good to hear")
+                elif AreYouSatisfied == 'n' or AreYouSatisfied == 'N':
+                    sys.exit("Re-run programm to get better intervals")
+                else:
+                    # For wrong input
+                    print("\tWRONG INPUT")
+                    AreYouSatisfied =  input("\tAre the intervals correct (y/n)?")
 
 
-        selector.save()
+            selector.normalize_interval()
+
+
+            AreYouSatisfied = input("\tIs te normalization done correctly?")
+
+            while AreYouSatisfied != 'y' and AreYouSatisfied != 'Y' and AreYouSatisfied != 'n' and AreYouSatisfied != 'N':
+                if AreYouSatisfied == 'y' or AreYouSatisfied == 'Y':
+                    print("\tThat is good to hear")
+                elif AreYouSatisfied == 'n' or AreYouSatisfied == 'N':
+                    # Not satisfied --> Redo normalization
+                    selector = SpectrumSelector(wav, flux, line_label, line_wav, 
+                                                "/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/Lines/4U1538-52")
+                    selector.select_intervals()
+                    selector.normalize_interval()
+                    AreYouSatisfied = input("\tIs te normalization done correctly (y/n)?")
+                else:
+                    # For wrong input
+                    print("\tWRONG INPUT")
+                    AreYouSatisfied =  input("\tAre the intervals correct (y/n)?")
+
+
+            selector.save()
+
+
+            # Check if result is satisfactory and if line should be removed
+            AreYouSatisfied = input("\tAre you satisfied with the result (y/n)?")
+
+            if AreYouSatisfied == 'n' or AreYouSatisfied == 'N':
+                not_satisfied.append(line_label)
+
+                AreYouSatisfied = input("\tShould this line be deleted (y/n)?")
+                if AreYouSatisfied == 'y' or AreYouSatisfied == 'Y':
+                    # Remove the folder and its contents
+                    shutil.rmtree(folder_path)
+
+    print(f"Not satisfied with:\t{not_satisfied}")
