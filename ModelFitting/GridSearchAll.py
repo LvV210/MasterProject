@@ -32,7 +32,7 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     # Grid Search values for vsin(i)
     vsini_start = 60
     vsini_end = 260
-    vsini_stepsize = 2
+    vsini_stepsize = 25
 
     print(f"Current: {OBJECT_NAME} {galaxy}")
 
@@ -69,12 +69,14 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     # Import models for given galaxy
     models = import_models_quickload(galaxy)
     print('MODELS IMPORTED')
-    # Calculate log(g)[cgs]
-    df_AllParams = pd.read_csv("/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/tables/results/ALLPARAMETERS.csv")
-    df_AllParams['logg'] = (np.log10(df_AllParams.Mopt * M_sun.value * G.value * 100 ** 3 / (df_AllParams.Ropt * R_sun.value * 100)**2))
-    logg = round(df_AllParams[['id', 'logg']].loc[df_AllParams['id'] == OBJECT_NAME]['logg'].reset_index(drop=True).at[0], 1)
-    # Filter models around log(g)
-    models = models_in_interval(models, T1=0, T2=100000, log_g1=logg-0.2, log_g2=logg+0.2)
+
+    """BASED ON LOG(G)"""
+    # # Calculate log(g)[cgs]
+    # df_AllParams = pd.read_csv("/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/tables/results/ALLPARAMETERS.csv")
+    # df_AllParams['logg'] = (np.log10(df_AllParams.Mopt * M_sun.value * G.value * 100 ** 3 / (df_AllParams.Ropt * R_sun.value * 100)**2))
+    # logg = round(df_AllParams[['id', 'logg']].loc[df_AllParams['id'] == OBJECT_NAME]['logg'].reset_index(drop=True).at[0], 1)
+    # # Filter models around log(g)
+    # models = models_in_interval(models, T1=0, T2=100000, log_g1=logg-0.2, log_g2=logg+0.2)
 
 
     # The spectral lines that correspond to the object and are used
@@ -107,12 +109,13 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     vsini_grid = list(range(vsini_start, vsini_end + 1, vsini_stepsize))
 
     # Get the helium lines for the gridsearch
-    _object_lines_He = lines_model_fit(OBJECT_NAME)
+    lines_path = f"/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/Lines/{save}"
+    line_labels = [f for f in os.listdir(lines_path) if os.path.isdir(os.path.join(lines_path, f))]
 
     # PERFORM THE GRID SEARCH
     for vsini in vsini_grid:
         print(f"\tvsin(i): {vsini}", flush=True)
-        chi2, chi2_perline = chi_squared_for_all_models(spectra, models, _object_lines_He, SNR, vrad, vsini)
+        chi2, chi2_perline = chi_squared_for_all_models(spectra, models, lines_path, SNR, vrad, vsini)
         results[f'vsini{vsini}'] = chi2
         results_perline[f'vsini{vsini}'] = chi2_perline
         print()
@@ -190,8 +193,8 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
         for line in _object_lines['lines']:
             file.write(f"\t{line[1]}\n")
         file.write(f"\nThe Helium lines used in the grid search:\n")
-        for line in _object_lines_He['lines']:
-            file.write(f"\t{line[1]}\n")
+        for line in line_labels:
+            file.write(f"\t{line}\n")
 
     print("\nDONE")
 

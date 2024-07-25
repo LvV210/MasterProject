@@ -707,7 +707,7 @@ def determine_radial_velocity(spectra: list, lines: dict, guassian: callable, ob
 """
 MODEL FITTING
 """
-def chi_squared_for_all_models(spectra:list, models:dict, lines:dict, SNR:list, vrad: float, vsini: float)->dict:
+def chi_squared_for_all_models(spectra:list, models:dict, lines_path:str, SNR:list, vrad: float, vsini: float)->dict:
     """
     Determines the chi-squared for every model for the given spectral lines.
 
@@ -725,40 +725,45 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines:dict, SNR:list, 
     chi2 = {}
     chi2_perline = {}
 
+    # Read in all line data
+    lines = {}
+    # Get the list of folders in the directory
+    folders = [os.path.join(lines_path, f) for f in os.listdir(lines_path) if os.path.isdir(os.path.join(lines_path, f))]
+    line_labels = [f for f in os.listdir(lines_path) if os.path.isdir(os.path.join(lines_path, f))]
+    for line_label, path in zip(line_labels, folders):
+        # Get Line data
+        with open(path + '/Line.json', 'r') as file:
+            data = json.load(file)
+        # SAVE LINE
+        lines[line_label] = data
+        
+
+
     for key, model in models.items():
         # Chi-squared parameter
         chi2[key] = 0
         # Chi-squared per line
         chi2_perline[key] = {}
 
-        for line in lines['lines']:
+
+        for line_label, line in lines.items():
+            wav_line, flux_line = line['Wavelength'], line['Flux']
+            
             # Rest wavelength of the spectral line
-            central_wavelength = line[0]
+            central_wavelength = np.mean(wav_line)
 
             # Select the spectrum that contains the spectral line
             wav, flux = select_spectrum(spectra, central_wavelength)
             SNR_value = select_SNR(wav, SNR)
 
-            # Extract the spectral line from the spectrum
-            wav, flux = extract_spectrum_within_range(wav, flux, line[2], line[5])
-            wav_cont, flux_cont = extract_continuum(wav, flux, line[2], line[5], line[3], line[4])
-            wav_line, flux_line = extract_spectrum_within_range(wav, flux, line[3], line[4])
+
             # Extract the line from the model
             wav_model = model['WAVELENGTH']
             flux_model = model['FLUX']
             # Dopplershift the model
             wav_model = doppler_shift_spectrum(wav_model, vrad)
             wav_model, flux_model = extract_spectrum_within_range(np.array(wav_model), np.array(flux_model), 
-                                                                    line[2], line[5])
-
-
-            # Linear fit to continuum
-            cont_fit = np.poly1d(np.polyfit(wav_cont, flux_cont, 1))
-            # Normalize spectrum
-            flux /= cont_fit(wav)
-            flux_cont /= cont_fit(wav_cont)
-            flux_line /= cont_fit(wav_line)
-
+                                                                    wav_line[0], wav_line[-1])
 
             # Apply doppler broadening
             wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
@@ -770,12 +775,11 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines:dict, SNR:list, 
             # Keep track of the total chi-squared for all lines
             chi2[key] += chi2_value
             # Save for each line the chi-squared individually
-            chi2_perline[key][line[1]] = chi2_value
+            chi2_perline[key][line_label] = chi2_value
 
         # Devide the total chi-squared by the number of lines.
-        chi2[key] /= len(lines['lines'])
-
-    print("DONE", end='', flush=True)
+        chi2[key] /= len(folders)
+    print("DONE")
     return chi2, chi2_perline
 
 
@@ -834,7 +838,7 @@ def chi_squared(wav_model, flux_model, wav_line, flux_line, SNR):
 """
 PLOTTING RESULTS
 """
-def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad:float, vsini:float, save=False)->None:
+def plot_best_model(spectra: list, models:dict, lines_path:str, best_model:str, vrad:float, vsini:float, save=False)->None:
     """
     Plots the best model over the spectrum
 
@@ -846,7 +850,17 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
         vrad (float): Radial velocity (km/s)
         vsini (float): vsin(i) (km/s)
     """
-    lines = lines['lines']
+    # Read in all line data
+    lines = []
+    # Get the list of folders in the directory
+    folders = [os.path.join(lines_path, f) for f in os.listdir(lines_path) if os.path.isdir(os.path.join(lines_path, f))]
+    line_labels = [f for f in os.listdir(lines_path) if os.path.isdir(os.path.join(lines_path, f))]
+    for line_label, path in zip(line_labels, folders):
+        # Get Line data
+        with open(path + '/Line.json', 'r') as file:
+            data = json.load(file)
+        # SAVE LINE
+        lines.append(data)
     model = models[best_model]
 
     num_plots = len(lines)
@@ -864,47 +878,33 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
             plot_index = i * 4 + j
 
             if plot_index < num_plots:
-
+                wav_line, flux_line = lines[plot_index]['Wavelength'], lines[plot_index]['Flux']
+                
                 # Rest wavelength of the spectral line
-                central_wavelength = lines[plot_index][0]
+                central_wavelength = np.mean(wav_line)
 
                 # Select the spectrum that contains the spectral line
                 wav, flux = select_spectrum(spectra, central_wavelength)
 
-                # Extract the spectral line from the spectrum
-                wav, flux = extract_spectrum_within_range(wav, flux, lines[plot_index][2], lines[plot_index][5])
-                wav_cont, flux_cont = extract_continuum(wav, flux, lines[plot_index][2], lines[plot_index][5], 
-                                                        lines[plot_index][3], lines[plot_index][4])
-                wav_line, flux_line = extract_spectrum_within_range(wav, flux, lines[plot_index][3], lines[plot_index][4])
                 # Extract the line from the model
                 wav_model = model['WAVELENGTH']
                 flux_model = model['FLUX']
                 # Dopplershift the model
                 wav_model = doppler_shift_spectrum(wav_model, vrad)
                 wav_model, flux_model = extract_spectrum_within_range(np.array(wav_model), np.array(flux_model), 
-                                                                      lines[plot_index][2], lines[plot_index][5])
-
-                # Linear fit to continuum
-                cont_fit = np.poly1d(np.polyfit(wav_cont, flux_cont, 1))
-                # Normalize spectrum
-                flux /= cont_fit(wav)
-                flux_cont /= cont_fit(wav_cont)
-                flux_line /= cont_fit(wav_line)
-
+                                                                        wav_line[0], wav_line[-1])
 
                 # Apply doppler broadening
                 wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
                 flux_model = pyasl.rotBroad(wav_model, flux_model, 0.0, vsini)
 
-
-                ax.plot(wav, flux, color='blue', alpha=0.5)
                 ax.plot(wav_line, flux_line, color='orange', alpha=0.5)
                 ax.plot(wav_model, flux_model, color='green')
 
                 # Annotate each line with text vertically
                 ax.set_xlabel(r"Wavelength ($\AA$)", fontsize=12)
                 ax.set_ylabel(r"Normalised flux", fontsize=12)
-                ax.set_title(lines[plot_index][1], fontsize=12)
+                ax.set_title(line_labels[plot_index], fontsize=12)
                 ax.grid(alpha=0.25)
 
     plt.suptitle(f'Best model: {best_model}', fontsize=15)
@@ -919,7 +919,7 @@ def plot_best_model(spectra: list, models:dict, lines:dict, best_model:str, vrad
 
 
 
-def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, vsini:float, best_model:str, save=False)->None:
+def plot_models_over_lines(spectra: list, models:dict, lines_path:str, vrad:float, vsini:float, best_model:str, save=False)->None:
     """
     Plots the best model over the spectrum
 
@@ -931,12 +931,23 @@ def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, v
         vrad (float): Radial velocity (km/s)
         vsini (float): vsin(i) (km/s)
     """
-    lines = lines['lines']
+    # Read in all line data
+    lines = []
+    # Get the list of folders in the directory
+    folders = [os.path.join(lines_path, f) for f in os.listdir(lines_path) if os.path.isdir(os.path.join(lines_path, f))]
+    line_labels = [f for f in os.listdir(lines_path) if os.path.isdir(os.path.join(lines_path, f))]
+    for line_label, path in zip(line_labels, folders):
+        # Get Line data
+        with open(path + '/Line.json', 'r') as file:
+            data = json.load(file)
+        # SAVE LINE
+        lines.append(data)
+    model = models[best_model]
 
     num_plots = len(lines)
-    num_rows = (num_plots - 1) // 3 + 1  # Calculate the number of rows needed
+    num_rows = (num_plots - 1) // 4 + 1  # Calculate the number of rows needed
 
-    fig, axes = plt.subplots(num_rows, 3, figsize=(15, num_rows * 5))
+    fig, axes = plt.subplots(num_rows, 4, figsize=(15, num_rows * 4))
 
     # Flatten axes if necessary
     if num_rows == 1:
@@ -945,30 +956,21 @@ def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, v
     for i, ax_row in enumerate(axes):
 
         for j, ax in enumerate(ax_row):
-            plot_index = i * 3 + j
+            plot_index = i * 4 + j
 
             if plot_index < num_plots:
-
+                wav_line, flux_line = lines[plot_index]['Wavelength'], lines[plot_index]['Flux']
+                
                 # Rest wavelength of the spectral line
-                central_wavelength = lines[plot_index][0]
+                central_wavelength = np.mean(wav_line)
 
-                # Select the spectrum that contains the spectral line
-                wav, flux = select_spectrum(spectra, central_wavelength)
+                ax.plot(wav_line, flux_line, color='orange', alpha=0.5)
 
-                # Extract the spectral line from the spectrum
-                wav, flux = extract_spectrum_within_range(wav, flux, lines[plot_index][2], lines[plot_index][5])
-                wav_cont, flux_cont = extract_continuum(wav, flux, lines[plot_index][2], lines[plot_index][5], 
-                                                        lines[plot_index][3], lines[plot_index][4])
-                wav_line, flux_line = extract_spectrum_within_range(wav, flux, lines[plot_index][3], lines[plot_index][4])
-
-
-                # Linear fit to continuum
-                cont_fit = np.poly1d(np.polyfit(wav_cont, flux_cont, 1))
-                # Normalize spectrum
-                flux /= cont_fit(wav)
-                flux_cont /= cont_fit(wav_cont)
-                flux_line /= cont_fit(wav_line)
-
+                # Annotate each line with text vertically
+                ax.set_xlabel(r"Wavelength ($\AA$)", fontsize=12)
+                ax.set_ylabel(r"Normalised flux", fontsize=12)
+                ax.set_title(line_labels[plot_index], fontsize=12)
+                ax.grid(alpha=0.25)
 
                 # Plot all models
                 for key, model in models.items():
@@ -978,7 +980,7 @@ def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, v
                     # Dopplershift the model
                     wav_model = doppler_shift_spectrum(wav_model, vrad)
                     wav_model, flux_model = extract_spectrum_within_range(np.array(wav_model), np.array(flux_model), 
-                                                                        lines[plot_index][2], lines[plot_index][5])
+                                                                        wav_line[0], wav_line[-1])
 
                     # Apply doppler broadening
                     wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
@@ -990,20 +992,7 @@ def plot_models_over_lines(spectra: list, models:dict, lines:dict, vrad:float, v
                     elif max(flux_model) < 5:
                         ax.plot(wav_model, flux_model, label=f'{key}')
 
-
-                ax.plot(wav, flux, color='blue', alpha=0.5)
-                ax.plot(wav_line, flux_line, color='orange', alpha=0.5)
-
-                # Annotate each line with text vertically
-                ax.set_xlabel(r"Wavelength ($\AA$)", fontsize=12)
-                ax.set_ylabel("Normalised flux", fontsize=12)
-                ax.set_title(lines[plot_index][1], fontsize=12)
-                ax.grid(alpha=0.25)
-
-                if len(models) < 10:
-                    ax.legend(fontsize=8)
-
-    plt.suptitle('All models', fontsize=15)
+    plt.suptitle(f'Best model: {best_model}', fontsize=15)
     plt.tight_layout()
 
     if save:
