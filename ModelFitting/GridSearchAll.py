@@ -9,11 +9,11 @@ from functions import import_spectra
 
 
 object_names = ['SMC X-1', 'LMC X-4', 'Vela X-1', 'Cen X-3', '4U1538-52', '4U1700-37']
-# object_names = ['4U1538-52', '4U1700-37']
+# object_names = ['Cen X-3', '4U1538-52', '4U1700-37']
 object_saves = ['SMCX_1', 'LMCX_4', 'VelaX_1', 'CenX_3', '4U1538_52', '4U1700_37']
-# object_saves = ['4U1538_52', '4U1700_37']
+# object_saves = ['CenX_3', '4U1538_52', '4U1700_37']
 galaxies = ['SMC', 'LMC', 'Milkyway', 'Milkyway', 'Milkyway', 'Milkyway']
-# galaxies = ['Milkyway', 'Milkyway']
+# galaxies = ['Milkyway', 'Milkyway', 'Milkyway']
 
 
 for name, save, current_galaxy in zip(object_names, object_saves, galaxies):

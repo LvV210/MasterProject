@@ -9,31 +9,191 @@ from scipy.interpolate import UnivariateSpline
 
 
 
-LINES = {
-        'Ha': 6562.79,
+ALL_LINES = {
+         'Ha': 6562.79,
          'Hb': 4861.35,
          'Hg': 4340.47,
          'Hd': 4101.73,
-        #  'He': 3970.08,
-        #  'Hf': 3889.06,
-        #  'Hn': 3835.4,
+         'He': 3970.08,
+         'Hf': 3889.06,
+         'Hn': 3835.4,
          'HeI_5875.66': 5875.66,
          'HeI_4471.50': 4471.5,
-        #  'HeI_4026.21': 4026.21,
-        #  'HeI_3819.62': 3819.62,
-        #  'HeI_3705.02': 3705.02,
-        #  'HeI_3634.25': 3634.25,
-        #  'HeI_3587.27': 3587.27,
+         'HeI_4026.21': 4026.21,
+         'HeI_3819.62': 3819.62,
+         'HeI_3705.02': 3705.02,
+         'HeI_3634.25': 3634.25,
+         'HeI_3587.27': 3587.27,
          'HeI_4921.93': 4921.93,
-        #  'HeI_4387.93': 4387.93,
-        #  'HeI_4143.76': 4143.76,
-        #  'HeI_4009.26': 4009.26,
+         'HeI_4387.93': 4387.93,
+         'HeI_4143.76': 4143.76,
+         'HeI_4009.26': 4009.26,
          'HeI_4713.17': 4713.17,
          'HeI_5015.68': 5015.68,
          'HeI_5047.74': 5047.74,
          'HeII_4686': 4686,
          'HeII_5411.53': 5411.53,
+         'HeII_4199.83': 4199.83,
+         'SiIII_5739': 5739,
+         'SiIII_4552': 4552,
+         'SiIII_4567': 4567,
+         'SiIII4574': 4574,
+         'SiIV4116': 4116,
+         'SiIV4212': 4212,
+         'SiIV4089': 4089}
+
+
+LINES_4U1538 = {
+         'Hb': 4861.35,
+         'Hg': 4340.47,
+         'Hd': 4101.73,
+         'He': 3970.08,
+         'Hf': 3889.06,
+         'Hn': 3835.4,
+         'HeI_5875.66': 5875.66,
+         'HeI_4471.50': 4471.5,
+         'HeI_4921.93': 4921.93,
+         'HeI_4387.93': 4387.93,
+         'HeI_4713.17': 4713.17,
+         'HeI_5015.68': 5015.68,
+         'HeI_5047.74': 5047.74,
+         'HeII_4686': 4686,
+         'HeII_5411.53': 5411.53,
+         'HeII_4199.83': 4199.83,
+         'SiIII_5739': 5739,
+         'SiIV4116': 4116,
+         'SiIV4212': 4212,
+         'SiIV4089': 4089
+}
+
+
+LINES_4U1700 = {
+         'Hg': 4340.47,
+         'Hd': 4101.73,
+         'Hf': 3889.06,
+         'Hn': 3835.4,
+         'HeI_4471.50': 4471.5,
+         'HeI_4026.21': 4026.21,
+         'HeII_4686': 4686,
          'HeII_4199.83': 4199.83}
+
+
+LINES_Cen = {
+         'Hb': 4861.35,
+         'Hg': 4340.47,
+         'Hd': 4101.73,
+         'He': 3970.08,
+         'Hf': 3889.06,
+         'Hn': 3835.4,
+         'HeI_5875.66': 5875.66,
+         'HeI_4471.50': 4471.5,
+         'HeI_4026.21': 4026.21,
+         'HeI_4921.93': 4921.93,
+         'HeI_4387.93': 4387.93,
+         'HeI_4143.76': 4143.76,
+         'HeI_4009.26': 4009.26,
+         'HeI_4713.17': 4713.17,
+         'HeI_5015.68': 5015.68,
+         'HeII_4686': 4686,
+         'HeII_5411.53': 5411.53,
+         'HeII_4199.83': 4199.83,
+         'SiIII_5739': 5739,
+         'SiIV4116': 4116,
+         'SiIV4089': 4089}
+
+
+LINES_LMC = {
+        'Ha': 6562.79,
+         'Hb': 4861.35,
+         'Hg': 4340.47,
+         'Hd': 4101.73,
+         'He': 3970.08,
+         'Hf': 3889.06,
+         'Hn': 3835.4,
+         'HeI_5875.66': 5875.66,
+         'HeI_4471.50': 4471.5,
+         'HeI_4026.21': 4026.21,
+         'HeI_4921.93': 4921.93,
+         'HeI_4387.93': 4387.93,
+         'HeI_4143.76': 4143.76,
+         'HeI_4009.26': 4009.26,
+         'HeI_4713.17': 4713.17,
+         'HeI_5015.68': 5015.68,
+         'HeI_5047.74': 5047.74,
+         'HeII_4686': 4686,
+         'HeII_5411.53': 5411.53,
+         'HeII_4199.83': 4199.83,
+         'SiIV4116': 4116,
+         'SiIV4089': 4089}
+
+
+LINES_SMC = {
+         'Hb': 4861.35,
+         'Hg': 4340.47,
+         'Hd': 4101.73,
+         'He': 3970.08,
+         'Hf': 3889.06,
+         'Hn': 3835.4,
+         'HeI_5875.66': 5875.66,
+         'HeI_4471.50': 4471.5,
+         'HeI_4026.21': 4026.21,
+         'HeI_4921.93': 4921.93,
+         'HeI_4387.93': 4387.93,
+         'HeI_4143.76': 4143.76,
+         'HeI_4009.26': 4009.26,
+         'HeI_4713.17': 4713.17,
+         'HeI_5015.68': 5015.68,
+         'HeI_5047.74': 5047.74,
+         'HeII_5411.53': 5411.53,
+         'HeII_4199.83': 4199.83,
+         'SiIV4116': 4116,
+         'SiIV4212': 4212,
+         'SiIV4089': 4089}
+
+
+LINES_Vela = {
+         'Hg': 4340.47,
+         'Hf': 3889.06,
+         'Hn': 3835.4,
+         'HeI_5875.66': 5875.66,
+         'HeI_4471.50': 4471.5,
+         'HeI_4026.21': 4026.21,
+         'HeI_4921.93': 4921.93,
+         'HeI_4387.93': 4387.93,
+         'HeI_4143.76': 4143.76,
+         'HeI_4009.26': 4009.26,
+         'HeI_4713.17': 4713.17,
+         'HeI_5015.68': 5015.68,
+         'HeI_5047.74': 5047.74,
+         'HeII_5411.53': 5411.53,
+         'HeII_4199.83': 4199.83,
+         'SiIII_4552': 4552,
+         'SiIII_4567': 4567,
+         'SiIII4574': 4574,
+         'SiIV4116': 4116,
+         'SiIV4212': 4212,
+         'SiIV4089': 4089}
+
+
+
+def remove_folder_and_contents(folder_path):
+    # Check if the folder exists
+    if os.path.exists(folder_path):
+        # Iterate over all the contents of the folder
+        for root, dirs, files in os.walk(folder_path, topdown=False):
+            # Remove all files
+            for file in files:
+                file_path = os.path.join(root, file)
+                os.remove(file_path)
+            # Remove all directories
+            for dir in dirs:
+                dir_path = os.path.join(root, dir)
+                os.rmdir(dir_path)
+        # Remove the main folder itself
+        os.rmdir(folder_path)
+        print(f"Folder '{folder_path}' and all its contents have been removed.")
+    else:
+        print(f"Folder '{folder_path}' does not exist.")
 
 
 
@@ -56,7 +216,7 @@ class SpectrumSelector:
         self.cid_key = self.fig.canvas.mpl_connect('key_press_event', self.onkey)
         self.ax.plot(self.wav, self.flux, label='Spectrum', color='black')
         self.ax.vlines(x=self.central_wav, ymin=min(self.flux), ymax=max(self.flux), color='limegreen', linestyle='--', linewidth=1)
-        self.ax.set_title('Click to select intervals, press "0" for continuum, "1" for line\nActive: CONTINUUM')
+        self.ax.set_title(f'{self.line_label}\nClick to select intervals, press "0" for continuum, "1" for line\nActive: CONTINUUM')
         self.ax.legend()
 
 
@@ -71,12 +231,12 @@ class SpectrumSelector:
         """
         if event.key == '0':
             self.selecting_continuum = True
-            self.ax.set_title('Click to select intervals, press "0" for continuum, "1" for line\nActive: CONTINUUM')
+            self.ax.set_title(f'{self.line_label}\nClick to select intervals, press "0" for continuum, "1" for line\nActive: CONTINUUM')
 
             print("\tSwitched to selecting continuum intervals.")
         elif event.key == '1':
             self.selecting_continuum = False
-            self.ax.set_title('Click to select intervals, press "0" for continuum, "1" for line\nActive: LINE')
+            self.ax.set_title(f'{self.line_label}\nClick to select intervals, press "0" for continuum, "1" for line\nActive: LINE')
             print("\tSwitched to selecting line intervals.")
 
 
@@ -184,7 +344,7 @@ class SpectrumSelector:
         flux_norm_line = self.flux[self.line_intervals[0][0][0]:self.line_intervals[0][1][0]] / np.polyval(spline, wav_norm_line)
 
         # Plot the normalization and the fit
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 12))
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
         ax1.plot(wav, flux, color='black', label='Spectrum')
         ax1.plot(wav_cont, flux_cont, color='blue', label='Continuum')
         ax1.plot(wav, continuum, color='limegreen', label='Continuum fit', linewidth=2, linestyle='--')
@@ -204,6 +364,8 @@ class SpectrumSelector:
         ax2.plot(wav_norm_line, flux_norm_line, color='red')
         ax2.grid(alpha=0.25)
 
+
+        plt.suptitle(f"{self.line_label}")
         plt.tight_layout()
         plt.savefig(self.folder_path + '/Plots/NormFit.png')
         plt.show()
@@ -252,7 +414,8 @@ class SpectrumSelector:
 if __name__ == "__main__":
 
     # Initialize
-    object_ = 'SMCX_1'
+    object_ = 'VelaX_1'
+    LINES = LINES_Vela
     not_satisfied = []
 
     for line_label, line_wav in LINES.items():
@@ -335,6 +498,6 @@ if __name__ == "__main__":
                 AreYouSatisfied = input("\tShould this line be deleted (y/n)?")
                 if AreYouSatisfied == 'y' or AreYouSatisfied == 'Y':
                     # Remove the folder and its contents
-                    shutil.rmtree(folder_path)
+                    remove_folder_and_contents(folder_path)
 
     print(f"Not satisfied with:\t{not_satisfied}")
