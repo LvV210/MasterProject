@@ -1,0 +1,45 @@
+Grid Search Information:
+------------------------
+Object: 		 LMC X-4
+Object_ : 		 LMCX_4
+FolderPath: 	 /mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/FitResults/LMCX_4S60E260delta25/
+Galaxy: 		 LMC
+
+------------------------
+vsin(i) Start: 		 60
+vsin(i) End: 		 260
+vsin(i) Stepsize: 	 25
+
+------------------------
+GRID SEARCH RESULTS
+The minimum chi-squared: 	 1.8278016037973988
+The best vsin(i): 			 260 km/s
+This is for model: 			 T31000logg3.4
+Radial Velocity: 		 314.8953368544094
+Radial Velocity error: 	 0.0
+
+The SNR of the spectra: [(4000, 59.5), (5000, 64.8)]
+The lines examined:
+	H$\beta$: 4861.33
+	He I: 4921.93
+	He II: 5411.53
+	H$\gamma$: 4340.46
+	He I: 4471.50
+
+The Helium lines used in the grid search:
+	Hd
+	He
+	HeII_4199.83
+	HeII_5411.53
+	HeI_4009.26
+	HeI_4026.21
+	HeI_4143.76
+	HeI_4387.93
+	HeI_4471.50
+	HeI_4713.17
+	HeI_4921.93
+	HeI_5015.68
+	HeI_5047.74
+	Hf
+	Hg
+	Hn

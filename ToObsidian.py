@@ -12,7 +12,12 @@ result_folders = folders = [entry for entry in os.listdir(source_folder) if os.p
 for HMXB in objects:
     for result_folder in result_folders:
         if HMXB in result_folder:
-            # print(os.path.join(destination_folder, HMXB), '\n',os.path.join(source_folder, result_folder))
-            print('\n\n')
-            # shutil.copy(result_folder, os.path.join(destination_folder, HMXB))
-
+            # print(os.path.join(destination_folder, HMXB), '\n',os.path.join(source_folder, result_folder, 'BestModel.png'))
+            # print('\n\n')
+            shutil.copy(os.path.join(source_folder, result_folder, 'BestModel.png'), os.path.join(destination_folder, HMXB, 'MostRecentResult'))
+            shutil.copy(os.path.join(source_folder, result_folder, 'AllModelsOverData.png'), os.path.join(destination_folder, HMXB, 'MostRecentResult'))
+            shutil.copy(os.path.join(source_folder, result_folder, 'AllModelsOverData(logg).png'), os.path.join(destination_folder, HMXB, 'MostRecentResult'))
+            shutil.copy(os.path.join(source_folder, result_folder, 'AllModelsOverData(Teff).png'), os.path.join(destination_folder, HMXB, 'MostRecentResult'))
+            shutil.copy(os.path.join(source_folder, result_folder, 'RadialVelocity.png'), os.path.join(destination_folder, HMXB, 'MostRecentResult'))
+            shutil.copy(os.path.join(source_folder, result_folder, 'ChiSquaredPerParameter.png'), os.path.join(destination_folder, HMXB, 'MostRecentResult'))
+            shutil.copy(os.path.join(source_folder, result_folder, 'ResultPerLine.png'), os.path.join(destination_folder, HMXB, 'MostRecentResult'))

@@ -1,0 +1,55 @@
+Grid Search Information:
+------------------------
+Object: 		 Cen X-3
+Object_ : 		 CenX_3
+FolderPath: 	 /mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/ModelFitting/FitResults/CenX_3S60E260delta25/
+Galaxy: 		 Milkyway
+
+------------------------
+vsin(i) Start: 		 60
+vsin(i) End: 		 260
+vsin(i) Stepsize: 	 25
+
+------------------------
+GRID SEARCH RESULTS
+The minimum chi-squared: 	 2.663427028704854
+The best vsin(i): 			 235 km/s
+This is for model: 			 T27000logg3.2
+Radial Velocity: 		 -0.6333427056022168
+Radial Velocity error: 	 0.0
+
+The SNR of the spectra: [(4000, 32.8), (5000, 90.7)]
+The lines examined:
+	H$\beta$: 4861.33
+	He I: 4921.93
+	He I: 5015.68
+	He II: 5411.53
+	He I: 5875.66
+	He II: 4199.83
+	H$\gamma$: 4340.46
+	H11: 3770.63
+	H10: 3797.90
+	He I: 3819.62
+	H9: 3835.38
+	H8: 3889.05
+
+The Helium lines used in the grid search:
+	Hd
+	He
+	HeII_4199.83
+	HeII_5411.53
+	HeI_3634.25
+	HeI_3819.62
+	HeI_4009.26
+	HeI_4026.21
+	HeI_4143.76
+	HeI_4387.93
+	HeI_4713.17
+	HeI_4921.93
+	HeI_5015.68
+	Hf
+	Hg
+	Hn
+	SiIII_5739
+	SiIV4089
+	SiIV4116

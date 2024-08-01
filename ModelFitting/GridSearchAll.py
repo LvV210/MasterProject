@@ -30,9 +30,9 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     galaxy = current_galaxy
 
     # Grid Search values for vsin(i)
-    vsini_start = 60
-    vsini_end = 260
-    vsini_stepsize = 25
+    vsini_start = 75
+    vsini_end = 325
+    vsini_stepsize = 5
 
     print(f"Current: {OBJECT_NAME} {galaxy}")
 
@@ -105,6 +105,9 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     results = {}
     results_perline = {}
 
+    results_not_reduced = {}
+    results_perline_not_reduced = {}
+
     # Set the grid for vsin(i)
     vsini_grid = list(range(vsini_start, vsini_end + 1, vsini_stepsize))
 
@@ -115,9 +118,12 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     # PERFORM THE GRID SEARCH
     for vsini in vsini_grid:
         print(f"\tvsin(i): {vsini}", flush=True)
-        chi2, chi2_perline = chi_squared_for_all_models(spectra, models, lines_path, SNR, vrad, vsini)
+        chi2, chi2_perline, chi2_not_reduced, chi2_perline_not_reduced = chi_squared_for_all_models(spectra, models, lines_path, SNR, vrad, vsini)
         results[f'vsini{vsini}'] = chi2
         results_perline[f'vsini{vsini}'] = chi2_perline
+
+        results_not_reduced[f'vsini{vsini}'] = chi2_not_reduced
+        results_perline_not_reduced[f'vsini{vsini}'] = chi2_perline_not_reduced
         print()
 
 
@@ -131,11 +137,23 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     with open(folder_path + new_folder_name + '/' + 'Chi2_perline.json', 'w') as json_file:
         json.dump(results_perline, json_file)
 
+    # Save result as json file
+    with open(folder_path + new_folder_name + '/' + 'Chi2_NotReduced.json', 'w') as json_file:
+        json.dump(results_not_reduced, json_file)
+    # Save result per line as json file
+    with open(folder_path + new_folder_name + '/' + 'Chi2_perline_NotReduced.json', 'w') as json_file:
+        json.dump(results_perline_not_reduced, json_file)
+
 
     # Save result as DataFrame
     pd.DataFrame.from_dict(results, orient='columns').to_csv(folder_path + new_folder_name + '/' + 'Chi2.csv')
     # Save result per line as DataFrame
     pd.DataFrame.from_dict(results_perline, orient='columns').to_csv(folder_path + new_folder_name + '/' + 'Chi2_perline.csv')
+
+    # Save result as DataFrame
+    pd.DataFrame.from_dict(results_not_reduced, orient='columns').to_csv(folder_path + new_folder_name + '/' + 'Chi2_NotReduced.csv')
+    # Save result per line as DataFrame
+    pd.DataFrame.from_dict(results_perline_not_reduced, orient='columns').to_csv(folder_path + new_folder_name + '/' + 'Chi2_perline_NotReduced.csv')
 
 
     """

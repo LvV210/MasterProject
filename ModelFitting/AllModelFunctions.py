@@ -661,9 +661,9 @@ def determine_radial_velocity(spectra: list, lines: dict, guassian: callable, ob
     ## PLOT THE FIT RESULTS
     if save:
         num_plots = len(fit_results)
-        num_rows = (num_plots - 1) // 4 + 1  # Calculate the number of rows needed
+        num_rows = (num_plots - 1) // 3 + 1  # Calculate the number of rows needed
 
-        fig, axes = plt.subplots(num_rows, 4, figsize=(15, num_rows * 4))
+        fig, axes = plt.subplots(num_rows, 3, figsize=(15, num_rows * 4))
 
         # Flatten axes if necessary
         if num_rows == 1:
@@ -672,30 +672,32 @@ def determine_radial_velocity(spectra: list, lines: dict, guassian: callable, ob
         for i, ax_row in enumerate(axes):
 
             for j, ax in enumerate(ax_row):
-                plot_index = i * 4 + j
+                plot_index = i * 3 + j
 
                 if plot_index < num_plots:
                     key = list(fit_results.keys())[plot_index]
                     wav, flux = fit_results[key]['spectrum']
                     fit = gaussian(wav, *fit_results[key]['fit_result'][0])
 
-                    ax.plot(wav, flux, color='blue', label='spectrum')  # Plot your data here
-                    ax.plot(wav, fit, color='orange', label='fit')
+                    ax.plot(wav, flux, color='black', linewidth=0.75, label='spectrum', alpha=0.7)  # Plot your data here
+                    ax.plot(wav, fit, color='red', label='fit', linewidth=2)
                     ax.vlines(fit_results[key]['fit_result'][0][0], ymin=min(fit), ymax=max(fit),
-                            label=(r'$\mu$ = ' + f"{round(fit_results[key]['fit_result'][0][0], 2)}" + r'$\AA$'), color='red')
-                    ax.set_title(f'{key}')
-                    ax.legend(fontsize=8)
+                            label=(r'$\mu$ = ' + f"{round(fit_results[key]['fit_result'][0][0], 2)}" + r'$\AA$'), color='orange',
+                            linestyle='--')
+                    ax.set_title(f'{key}', fontsize=14)
+                    ax.legend(fontsize=9)
+                    ax.grid(alpha=0.25)
 
                 else:
                     ax.axis('off')  # Turn off axis for unused subplots
                 
                 if j == 0:
-                    ax.set_ylabel('flux', size=12)
+                    ax.set_ylabel('flux', size=14)
                 if i == len(axes) - 1:
-                    ax.set_xlabel(r'Wavelength ($\AA$)', size=12)
+                    ax.set_xlabel(r'Wavelength ($\AA$)', size=14)
 
 
-        plt.suptitle(f"{object_name}\nRadial velocity: {round(np.mean(doppler_shift), 2)}" + r" $\pm$ " + f"{round(np.std(doppler_shift), 2)}" + r" km $s^{-1}$", size=20)
+        plt.suptitle(f"{object_name}\nRadial velocity: {round(np.mean(doppler_shift), 2)}" + r" $\pm$ " + f"{round(np.std(doppler_shift), 2)}" + r" km $s^{-1}$", size=24)
         plt.tight_layout()
         plt.savefig(save)
         plt.show()
@@ -725,6 +727,9 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines_path:str, SNR:li
     chi2 = {}
     chi2_perline = {}
 
+    chi2_nr = {}
+    chi2_perline_nr = {}
+
     # Read in all line data
     lines = {}
     # Get the list of folders in the directory
@@ -742,8 +747,10 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines_path:str, SNR:li
     for key, model in models.items():
         # Chi-squared parameter
         chi2[key] = 0
+        chi2_nr[key] = 0
         # Chi-squared per line
         chi2_perline[key] = {}
+        chi2_perline_nr[key] = {}
 
 
         for line_label, line in lines.items():
@@ -771,16 +778,18 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines_path:str, SNR:li
 
 
             # Calculate chi-squared for this line
-            chi2_value = chi_squared(wav_model, flux_model, wav_line, flux_line, SNR_value)
+            chi2_value_red, chi2_value = chi_squared(wav_model, flux_model, wav_line, flux_line, SNR_value)
             # Keep track of the total chi-squared for all lines
+            chi2[key] += chi2_value_red
             chi2[key] += chi2_value
             # Save for each line the chi-squared individually
-            chi2_perline[key][line_label] = chi2_value
+            chi2_perline[key][line_label] = chi2_value_red
+            chi2_perline_nr[key][line_label] = chi2_value
 
         # Devide the total chi-squared by the number of lines.
         chi2[key] /= len(folders)
     print("DONE")
-    return chi2, chi2_perline
+    return chi2, chi2_perline, chi2_nr, chi2_perline_nr
 
 
 
@@ -829,16 +838,16 @@ def chi_squared(wav_model, flux_model, wav_line, flux_line, SNR):
     chi_squared = 0
     for i in range(len(flux_line)):
         chi_squared += ( (flux_model_inter[i] - flux_line[i]) / (1 / SNR) ) ** 2
-    chi_squared /= len(wav_line)
+    chi_squared_red = chi_squared / len(wav_line)
 
-    return chi_squared
+    return chi_squared_red, chi_squared
 
 
 
 """
 PLOTTING RESULTS
 """
-def plot_best_model(spectra: list, models:dict, lines_path:str, best_model:str, vrad:float, vsini:float, save=False)->None:
+def plot_best_model(spectra: list, models:dict, lines_path:str, best_model:str, vrad:float, vsini:float, object_name:str, save=False)->None:
     """
     Plots the best model over the spectrum
 
@@ -864,9 +873,9 @@ def plot_best_model(spectra: list, models:dict, lines_path:str, best_model:str, 
     model = models[best_model]
 
     num_plots = len(lines)
-    num_rows = (num_plots - 1) // 4 + 1  # Calculate the number of rows needed
+    num_rows = (num_plots - 1) // 3 + 1  # Calculate the number of rows needed
 
-    fig, axes = plt.subplots(num_rows, 4, figsize=(15, num_rows * 4))
+    fig, axes = plt.subplots(num_rows, 3, figsize=(15, num_rows * 3))
 
     # Flatten axes if necessary
     if num_rows == 1:
@@ -875,7 +884,7 @@ def plot_best_model(spectra: list, models:dict, lines_path:str, best_model:str, 
     for i, ax_row in enumerate(axes):
 
         for j, ax in enumerate(ax_row):
-            plot_index = i * 4 + j
+            plot_index = i * 3 + j
 
             if plot_index < num_plots:
                 wav_line, flux_line = lines[plot_index]['Wavelength'], lines[plot_index]['Flux']
@@ -898,16 +907,20 @@ def plot_best_model(spectra: list, models:dict, lines_path:str, best_model:str, 
                 wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
                 flux_model = pyasl.rotBroad(wav_model, flux_model, 0.0, vsini)
 
-                ax.plot(wav_line, flux_line, color='orange', alpha=0.5)
-                ax.plot(wav_model, flux_model, color='green')
+                ax.plot(wav_line, flux_line, color='black', linewidth=0.75, label='Spectrum', alpha=0.7)
+                ax.plot(wav_model, flux_model, color='red', linewidth=2, label='Model')
 
                 # Annotate each line with text vertically
-                ax.set_xlabel(r"Wavelength ($\AA$)", fontsize=12)
-                ax.set_ylabel(r"Normalised flux", fontsize=12)
-                ax.set_title(line_labels[plot_index], fontsize=12)
+                ax.set_title(line_labels[plot_index], fontsize=14)
                 ax.grid(alpha=0.25)
+                ax.legend(fontsize=9)
 
-    plt.suptitle(f'Best model: {best_model}', fontsize=15)
+                if i == num_rows - 1:
+                    ax.set_xlabel(r"Wavelength ($\AA$)", fontsize=14)
+                if j == 0:
+                    ax.set_ylabel(r"Norm. flux", fontsize=14)
+
+    plt.suptitle(f'{object_name}\nBest model: {best_model}', fontsize=24)
     plt.tight_layout()
 
     if save:
@@ -945,9 +958,9 @@ def plot_models_over_lines(spectra: list, models:dict, lines_path:str, vrad:floa
     model = models[best_model]
 
     num_plots = len(lines)
-    num_rows = (num_plots - 1) // 4 + 1  # Calculate the number of rows needed
+    num_rows = (num_plots - 1) // 3 + 1  # Calculate the number of rows needed
 
-    fig, axes = plt.subplots(num_rows, 4, figsize=(15, num_rows * 4))
+    fig, axes = plt.subplots(num_rows, 3, figsize=(15, num_rows * 4))
 
     # Flatten axes if necessary
     if num_rows == 1:
@@ -956,7 +969,7 @@ def plot_models_over_lines(spectra: list, models:dict, lines_path:str, vrad:floa
     for i, ax_row in enumerate(axes):
 
         for j, ax in enumerate(ax_row):
-            plot_index = i * 4 + j
+            plot_index = i * 3 + j
 
             if plot_index < num_plots:
                 wav_line, flux_line = lines[plot_index]['Wavelength'], lines[plot_index]['Flux']
@@ -964,13 +977,12 @@ def plot_models_over_lines(spectra: list, models:dict, lines_path:str, vrad:floa
                 # Rest wavelength of the spectral line
                 central_wavelength = np.mean(wav_line)
 
-                ax.plot(wav_line, flux_line, color='orange', alpha=0.5)
+                ax.plot(wav_line, flux_line, color='black', linewidth=0.75, alpha=0.7)
 
                 # Annotate each line with text vertically
-                ax.set_xlabel(r"Wavelength ($\AA$)", fontsize=12)
-                ax.set_ylabel(r"Normalised flux", fontsize=12)
-                ax.set_title(line_labels[plot_index], fontsize=12)
+                ax.set_title(line_labels[plot_index], fontsize=14)
                 ax.grid(alpha=0.25)
+                
 
                 # Plot all models
                 for key, model in models.items():
@@ -988,16 +1000,125 @@ def plot_models_over_lines(spectra: list, models:dict, lines_path:str, vrad:floa
 
                     if key == best_model and max(flux_model) < 5:
                         # Plot model
-                        ax.plot(wav_model, flux_model, label=f'Best: {key}', color='black', linestyle='--')
+                        ax.plot(wav_model, flux_model, label=f'Best: {key}', color='red', linestyle='--', linewidth=2)
                     elif max(flux_model) < 5:
-                        ax.plot(wav_model, flux_model, label=f'{key}')
+                        ax.plot(wav_model, flux_model, label=f'{key}', linewidth=0.75)
 
-    plt.suptitle(f'Best model: {best_model}', fontsize=15)
+                if len(models) < 7:
+                    ax.legend(fontsize=8)
+                if i == num_rows - 1:
+                    ax.set_xlabel(r"Wavelength ($\AA$)", fontsize=14)
+                if j == 0:
+                    ax.set_ylabel(r"Norm. flux", fontsize=14)
+            if plot_index >= len(lines):
+                ax.axis("off") 
+
+    plt.suptitle(f'Best model: {best_model}\n', fontsize=24)
     plt.tight_layout()
 
     if save:
         plt.savefig(save)
 
+    plt.show()
+
+    return
+
+
+
+def plot_result_per_line(chi2_per_line: dict, models: dict, vrad:float, object_name:str, lines_path: str, save:str=False):
+    """
+    Plots the best fit per spectral line.
+
+    Args:
+        chi2_per_line (dict): _description_
+        models (dict): _description_
+        lines_path (str): _description_
+        save (str, optional): _description_. Defaults to False.
+    """
+
+    # Initialize a dictionary to store the best model and vsini for each line
+    best_fit = {}
+
+    # Iterate over each vsini value
+    for vsini_value, models_ in chi2_per_line.items():
+        # Iterate over each model within the current vsini
+        for model_, lines in models_.items():
+            # Iterate over each line within the current model
+            for line, chi2_value in lines.items():
+                if line not in best_fit:
+                    best_fit[line] = {'chi2_value': chi2_value, 'model': model_, 'vsini': vsini_value}
+                else:
+                    if chi2_value < best_fit[line]['chi2_value']:
+                        best_fit[line] = {'chi2_value': chi2_value, 'model': model_, 'vsini': vsini_value}
+
+
+    # PLOT RESULTS
+    best_fit = list(best_fit.items())
+    num_plots = len(best_fit)
+    num_columns = 3
+    num_rows = (num_plots - 1) // num_columns + 1  # Calculate the number of rows needed
+
+    fig, axes = plt.subplots(num_rows, 3, figsize=(num_columns * 5, num_rows * 4))
+
+    # Flatten axes if necessary
+    if num_rows == 1:
+        axes = [axes]
+
+    for i, ax_row in enumerate(axes):
+
+        for j, ax in enumerate(ax_row):
+            plot_index = i * num_columns + j
+
+            if plot_index < num_plots:
+
+                # Data For best line
+                line = best_fit[plot_index][0]
+                best_model = best_fit[plot_index][1]['model']
+                Teff, logg = extract_temperature_and_gravity(best_model)
+                vsini = int(best_fit[plot_index][1]['vsini'].replace('vsini', ''))
+                chi2_value = best_fit[plot_index][1]['chi2_value']
+
+                # Import spectrum
+                with open(os.path.join(lines_path, line, 'Line.json'), 'r') as file:
+                    data = json.load(file)
+                wav, flux = data['Wavelength'], data['Flux']
+
+                # Import model
+                wav_model, flux_model = models[best_model]['WAVELENGTH'], models[best_model]['FLUX']
+                wav_model = doppler_shift_spectrum(wav_model, vrad)
+                wav_model, flux_model = extract_spectrum_within_range(np.array(wav_model), np.array(flux_model), min(wav), max(wav))
+                # Apply doppler broadening
+                wav_model, flux_model = pyasl.equidistantInterpolation(wav_model, flux_model, "2x")
+                flux_model = pyasl.rotBroad(wav_model, flux_model, 0.0, vsini)
+
+
+
+                # Add the first part of the title
+                ax.text(0.5, 1.1, line, fontsize=14, ha='center', transform=ax.transAxes, color='black')
+                # Add the second part of the title in a different color
+                ax.text(0.5, 1.02, f"Teff={Teff}K  log(g)={logg}  vsin(i)={vsini} km/s", fontsize=12, ha='center', color='midnightblue', transform=ax.transAxes)
+                # Hide the default title to avoid overlap
+                ax.set_title("")
+
+                # Plot results
+                ax.plot(wav, flux, label='Spectrum', color='black', linewidth=0.75, alpha=0.7)
+                ax.plot(wav_model, flux_model, label=f'Model', color='red', linewidth=2)
+                ax.legend(fontsize=9)
+                ax.grid(alpha=0.25)
+
+            else:
+                ax.axis("off")
+            
+            if i == num_rows - 1:
+                ax.set_xlabel(r"Wavelength ($\AA$)", fontsize=14)
+            if j == 0:
+                ax.set_ylabel(r"Norm. Flux", fontsize=14)
+
+
+    plt.suptitle(f"{object_name}\n", fontsize=24)
+    plt.tight_layout()
+    if save:
+        plt.savefig(save)
     plt.show()
 
     return
