@@ -730,6 +730,9 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines_path:str, SNR:li
     chi2_nr = {}
     chi2_perline_nr = {}
 
+    N_free = {}
+    N_free_perline = {}
+
     # Read in all line data
     lines = {}
     # Get the list of folders in the directory
@@ -748,9 +751,11 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines_path:str, SNR:li
         # Chi-squared parameter
         chi2[key] = 0
         chi2_nr[key] = 0
+        N_free[key] = 0
         # Chi-squared per line
         chi2_perline[key] = {}
         chi2_perline_nr[key] = {}
+        N_free_perline[key] = {}
 
 
         for line_label, line in lines.items():
@@ -778,18 +783,21 @@ def chi_squared_for_all_models(spectra:list, models:dict, lines_path:str, SNR:li
 
 
             # Calculate chi-squared for this line
-            chi2_value_red, chi2_value = chi_squared(wav_model, flux_model, wav_line, flux_line, SNR_value)
+            chi2_value, chi2_value_nr, n_free = chi_squared(wav_model, flux_model, wav_line, flux_line, SNR_value)
             # Keep track of the total chi-squared for all lines
-            chi2[key] += chi2_value_red
             chi2[key] += chi2_value
+            chi2_nr[key] += chi2_value_nr
             # Save for each line the chi-squared individually
-            chi2_perline[key][line_label] = chi2_value_red
-            chi2_perline_nr[key][line_label] = chi2_value
+            chi2_perline[key][line_label] = chi2_value
+            chi2_perline_nr[key][line_label] = chi2_value_nr
+            # Save the number of free parameters
+            N_free[key] += n_free
+            N_free_perline[key][line_label] = n_free
 
         # Devide the total chi-squared by the number of lines.
         chi2[key] /= len(folders)
     print("DONE")
-    return chi2, chi2_perline, chi2_nr, chi2_perline_nr
+    return chi2, chi2_perline, chi2_nr, chi2_perline_nr, N_free, N_free_perline
 
 
 
@@ -826,6 +834,9 @@ def doppler_shift_spectrum(wavelengths:Iterable[float], vrad:float)->Iterable[fl
 
 
 def chi_squared(wav_model, flux_model, wav_line, flux_line, SNR):
+    """
+    Returns: chi2, chi2 Not Reduced, Number of data points.
+    """
 
     # Get the flux for every wavelenght of the data.
     # Create a CubicSpline object
@@ -837,10 +848,10 @@ def chi_squared(wav_model, flux_model, wav_line, flux_line, SNR):
     # Calculate chi-squared
     chi_squared = 0
     for i in range(len(flux_line)):
-        chi_squared += ( (flux_model_inter[i] - flux_line[i]) / (1 / SNR) ) ** 2
-    chi_squared_red = chi_squared / len(wav_line)
+        chi_squared_nr += ( (flux_model_inter[i] - flux_line[i]) / (1 / SNR) ) ** 2
+    chi_squared = chi_squared_nr / len(wav_line)
 
-    return chi_squared_red, chi_squared
+    return chi_squared, chi_squared_nr, len(wav_line)
 
 
 

@@ -108,6 +108,9 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     results_not_reduced = {}
     results_perline_not_reduced = {}
 
+    results_N_free = {}
+    results_N_free_perline = {}
+
     # Set the grid for vsin(i)
     vsini_grid = list(range(vsini_start, vsini_end + 1, vsini_stepsize))
 
@@ -118,12 +121,16 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     # PERFORM THE GRID SEARCH
     for vsini in vsini_grid:
         print(f"\tvsin(i): {vsini}", flush=True)
-        chi2, chi2_perline, chi2_not_reduced, chi2_perline_not_reduced = chi_squared_for_all_models(spectra, models, lines_path, SNR, vrad, vsini)
+        chi2, chi2_perline, chi2_not_reduced, chi2_perline_not_reduced, N_free, N_free_perline = chi_squared_for_all_models(spectra, models, lines_path, SNR, vrad, vsini)
+
         results[f'vsini{vsini}'] = chi2
         results_perline[f'vsini{vsini}'] = chi2_perline
 
         results_not_reduced[f'vsini{vsini}'] = chi2_not_reduced
         results_perline_not_reduced[f'vsini{vsini}'] = chi2_perline_not_reduced
+
+        results_N_free[f'vsini{vsini}'] = N_free
+        results_N_free_perline[f'vsini{vsini}'] = N_free_perline
         print()
 
 
@@ -144,6 +151,13 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     with open(folder_path + new_folder_name + '/' + 'Chi2_perline_NotReduced.json', 'w') as json_file:
         json.dump(results_perline_not_reduced, json_file)
 
+    # Save result as json file
+    with open(folder_path + new_folder_name + '/' + 'N_free.json', 'w') as json_file:
+        json.dump(results_N_free, json_file)
+    # Save result per line as json file
+    with open(folder_path + new_folder_name + '/' + 'N_free_perline.json', 'w') as json_file:
+        json.dump(results_N_free_perline, json_file)
+
 
     # Save result as DataFrame
     pd.DataFrame.from_dict(results, orient='columns').to_csv(folder_path + new_folder_name + '/' + 'Chi2.csv')
@@ -154,6 +168,11 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     pd.DataFrame.from_dict(results_not_reduced, orient='columns').to_csv(folder_path + new_folder_name + '/' + 'Chi2_NotReduced.csv')
     # Save result per line as DataFrame
     pd.DataFrame.from_dict(results_perline_not_reduced, orient='columns').to_csv(folder_path + new_folder_name + '/' + 'Chi2_perline_NotReduced.csv')
+
+    # Save result as DataFrame
+    pd.DataFrame.from_dict(results_N_free, orient='columns').to_csv(folder_path + new_folder_name + '/' + 'N_free.csv')
+    # Save result per line as DataFrame
+    pd.DataFrame.from_dict(results_N_free_perline, orient='columns').to_csv(folder_path + new_folder_name + '/' + 'N_free_perline.csv')
 
 
     """

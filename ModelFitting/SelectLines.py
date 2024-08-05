@@ -61,11 +61,18 @@ LINES_4U1538 = {
 LINES_4U1700 = {
          'Hg': 4340.47,
          'Hd': 4101.73,
+         'He': 3970.08,
          'Hf': 3889.06,
          'Hn': 3835.4,
          'HeI_4471.50': 4471.5,
          'HeI_4026.21': 4026.21,
-         'HeII_4199.83': 4199.83}
+         'HeI_3819.62': 3819.62,
+         'HeI_4921.93': 4921.93,
+         'HeI_4387.93': 4387.93,
+         'HeI_4143.76': 4143.76,
+         'HeI_4009.26': 4009.26,
+         'HeI_4713.17': 4713.17,
+         'HeII_4199.83': 4199.83,}
 
 
 LINES_Cen = {
@@ -391,7 +398,7 @@ if __name__ == "__main__":
 
     # Initialize
     object_ = 'VelaX_1'
-    LINES = LINES_Vela
+    LINES = ALL_LINES
     not_satisfied = []
 
     for line_label, line_wav in LINES.items():
@@ -402,12 +409,14 @@ if __name__ == "__main__":
             print(f"\tLine Already EXISTS")
 
         elif os.path.exists(folder_path) == False and os.path.isdir(folder_path) == False:
-            # Make folder for LINE
-            os.mkdir(folder_path)
-            os.mkdir(folder_path + '/Plots')
 
-            # Get spectrum containing the LINE
-            wav, flux = select_spectrum(import_spectra(object_), line_wav)
+            try:
+                # Get spectrum containing the LINE
+                wav, flux = select_spectrum(import_spectra(object_), line_wav)
+            except TypeError:
+                print(f"No spectrum containing: {line_label}  {line_wav}")
+                not_satisfied.append(line_label)
+                continue
 
 
             """
@@ -420,25 +429,18 @@ if __name__ == "__main__":
 
 
             selected_intervals = selector.get_selected_intervals()
-            # print("Selected continuum intervals (index, x):", selected_intervals['continuum_intervals'])
-            # print("Selected line intervals (index, x):", selected_intervals['line_intervals'])
-
-
-            selector.plot_intervals()
-
 
             # Ask user if the intervals are satisfactory
             AreYouSatisfied = input("Are the intervals correct (y/n)?")
 
-            while AreYouSatisfied != 'y' and AreYouSatisfied != 'Y' and AreYouSatisfied != 'n' and AreYouSatisfied != 'N':
-                if AreYouSatisfied == 'y' or AreYouSatisfied == 'Y':
-                    print("\tThat is good to hear")
-                elif AreYouSatisfied == 'n' or AreYouSatisfied == 'N':
-                    sys.exit("Re-run programm to get better intervals")
-                else:
-                    # For wrong input
-                    print("\tWRONG INPUT")
-                    AreYouSatisfied =  input("\tAre the intervals correct (y/n)?")
+            if AreYouSatisfied == 'n' or AreYouSatisfied == 'N':
+                continue
+
+            # Make folder for LINE
+            os.mkdir(folder_path)
+            os.mkdir(folder_path + '/Plots')
+
+            selector.plot_intervals()
 
 
             selector.normalize_interval()
@@ -462,6 +464,7 @@ if __name__ == "__main__":
                     AreYouSatisfied =  input("\tAre the intervals correct (y/n)?")
 
 
+
             selector.save()
 
 
@@ -473,6 +476,7 @@ if __name__ == "__main__":
 
                 AreYouSatisfied = input("\tShould this line be deleted (y/n)?")
                 if AreYouSatisfied == 'y' or AreYouSatisfied == 'Y':
+                    not_satisfied.append(line_label)
                     # Remove the folder and its contents
                     remove_folder_and_contents(folder_path)
 
