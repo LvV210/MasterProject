@@ -8,12 +8,12 @@ from AllModelFunctions import *
 from functions import import_spectra
 
 
-object_names = ['SMC X-1', 'LMC X-4', 'Vela X-1', 'Cen X-3', '4U1538-52', '4U1700-37']
-# object_names = ['Cen X-3', '4U1538-52', '4U1700-37']
-object_saves = ['SMCX_1', 'LMCX_4', 'VelaX_1', 'CenX_3', '4U1538_52', '4U1700_37']
-# object_saves = ['CenX_3', '4U1538_52', '4U1700_37']
-galaxies = ['SMC', 'LMC', 'Milkyway', 'Milkyway', 'Milkyway', 'Milkyway']
-# galaxies = ['Milkyway', 'Milkyway', 'Milkyway']
+# object_names = ['SMC X-1', 'LMC X-4', 'Vela X-1', 'Cen X-3', '4U1538-52', '4U1700-37']
+object_names = ['Vela X-1']
+# object_saves = ['SMCX_1', 'LMCX_4', 'VelaX_1', 'CenX_3', '4U1538_52', '4U1700_37']
+object_saves = ['VelaX_1']
+# galaxies = ['SMC', 'LMC', 'Milkyway', 'Milkyway', 'Milkyway', 'Milkyway']
+galaxies = ['Milkyway']
 
 
 for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
@@ -30,9 +30,9 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     galaxy = current_galaxy
 
     # Grid Search values for vsin(i)
-    vsini_start = 75
-    vsini_end = 325
-    vsini_stepsize = 5
+    vsini_start = 70
+    vsini_end = 330
+    vsini_stepsize = 10
 
     print(f"Current: {OBJECT_NAME} {galaxy}")
 
@@ -91,10 +91,67 @@ for name, save, current_galaxy in zip(object_names, object_saves, galaxies):
     """
     RADIAL VELOCITY
     """
-    # Determine the radial velocity of the object
-    doppler_shifts = determine_radial_velocity(spectra, _object_lines, gaussian, OBJECT_NAME)
-    vrad = np.mean(doppler_shifts)
-    vrad_err = np.std(doppler_shifts)
+    if OBJECT_NAME == '4U1700-37':
+        # Path to root folder
+        folder_path2 = f"/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/Spectra/4U1700_37/old_spectra/"
+        # Get a list of all files in the folder
+        all_files2 = os.listdir(folder_path2)
+
+        # Filter files that start with "ADP"
+        adp_files2 = [file for file in all_files2 if file.startswith("ADP")]
+        # Gather the spectra
+        spectra_4U1700 = []
+        for file2 in adp_files2:
+            data2 = fits.getdata(folder_path2 + file2)
+
+            # Not all spectra have a FLUX, so instead import the FLUX_REDUCED
+            try:
+                flux2 = np.array(data2['FLUX'][0])
+            except KeyError:
+                flux2 = np.array(data2['FLUX_REDUCED'][0])
+                print(f"Spectrum for {OBJECT_NAME} is FLUX REDUCED")
+
+            wavelength2 = np.array(data2['WAVE'][0])
+            spectra_4U1700.append((wavelength2, flux2))
+        for spectrum2 in spectra_4U1700:
+            print(min(spectrum2[0]), max(spectrum2[0]))
+        # Determine the radial velocity of the object
+        doppler_shifts = determine_radial_velocity(spectra_4U1700, _object_lines, gaussian, OBJECT_NAME)
+        vrad = np.mean(doppler_shifts)
+        vrad_err = np.std(doppler_shifts)
+    elif OBJECT_NAME == "Vela X-1":
+        # Path to root folder
+        folder_path2 = f"/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/Spectra/VelaX_1/old_spectrum/"
+        # Get a list of all files in the folder
+        all_files2 = os.listdir(folder_path2)
+
+        # Filter files that start with "ADP"
+        adp_files2 = [file for file in all_files2 if file.startswith("ADP")]
+        # Gather the spectra
+        spectra_4U1700 = []
+        for file2 in adp_files2:
+            data2 = fits.getdata(folder_path2 + file2)
+
+            # Not all spectra have a FLUX, so instead import the FLUX_REDUCED
+            try:
+                flux2 = np.array(data2['FLUX'][0])
+            except KeyError:
+                flux2 = np.array(data2['FLUX_REDUCED'][0])
+                print(f"Spectrum for {OBJECT_NAME} is FLUX REDUCED")
+
+            wavelength2 = np.array(data2['WAVE'][0])
+            spectra_4U1700.append((wavelength2, flux2))
+        for spectrum2 in spectra_4U1700:
+            print(min(spectrum2[0]), max(spectrum2[0]))
+        # Determine the radial velocity of the object
+        doppler_shifts = determine_radial_velocity(spectra_4U1700, _object_lines, gaussian, OBJECT_NAME)
+        vrad = np.mean(doppler_shifts)
+        vrad_err = np.std(doppler_shifts)
+    else:
+        # Determine the radial velocity of the object
+        doppler_shifts = determine_radial_velocity(spectra, _object_lines, gaussian, OBJECT_NAME)
+        vrad = np.mean(doppler_shifts)
+        vrad_err = np.std(doppler_shifts)
 
 
     """

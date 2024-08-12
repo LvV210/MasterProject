@@ -181,10 +181,31 @@ def extract_continuum(wavelengths: np.array, flux: np.array, start: float, end: 
 
 
 
+def find_closest_wavelength_indices(wavelength_values, wavelength_list):
+    wavelength_array = np.array(wavelength_list)
+    closest_indices = []
+    for value in wavelength_values:
+        closest_index = np.abs(wavelength_array - value).argmin()
+        closest_indices.append(closest_index)
+    return closest_indices
+
+
+
+def spectral_lines_in_range(SPECTRAL_LINES, wavelength):
+    # Define the range
+    lower_bound = min(wavelength)
+    upper_bound = max(wavelength)
+
+    filtered_tuples = {key: value for key, value in SPECTRAL_LINES.items() if lower_bound <= value <= upper_bound}
+
+    return filtered_tuples
+
+
+
 """
 IMPORT FUNCTIONS
 """
-def import_spectra(object: str):
+def import_spectra(object: str, folder_path2=False):
 
     try:
         # Path to root folder
@@ -197,6 +218,10 @@ def import_spectra(object: str):
         folder_path = f"/mnt/c/Users/luukv/Documenten/NatuurSterrkenkundeMasterProject/CodeMP/MasterProject/Spectra/{object}/"
         # Get a list of all files in the folder
         all_files = os.listdir(folder_path)
+
+    if os.path.isdir(folder_path2):
+        folder_path = folder_path2
+        all_files = os.listdir(folder_path2)
 
     # Filter files that start with "ADP"
     adp_files = [file for file in all_files if file.startswith("ADP")]
@@ -564,7 +589,7 @@ def SignalToNoise(object_name:str)->list:
     SNR_4U1538_52 = [(4000, 9.), (5000, 63.7)]
     SNR_CenX_3 = [(4000, 32.8), (5000, 90.7)]
     SNR_SMCX_1 = [(4000, 50.2), (5000, 69.8)]
-    SNR_4U1700_37 = [(4000, 390.1), (7000, 310.3)]
+    SNR_4U1700_37 = [(3500, 116.19), (5000, 330.34)]
     SNR_LMCX_4 = [(4000, 59.5), (5000, 64.8)]
     SNR_VelaX_1 = [(4000, 378.9)]
 
@@ -846,7 +871,7 @@ def chi_squared(wav_model, flux_model, wav_line, flux_line, SNR):
     flux_model_inter = cubic_spline(wav_line)
 
     # Calculate chi-squared
-    chi_squared = 0
+    chi_squared_nr = 0
     for i in range(len(flux_line)):
         chi_squared_nr += ( (flux_model_inter[i] - flux_line[i]) / (1 / SNR) ) ** 2
     chi_squared = chi_squared_nr / len(wav_line)
