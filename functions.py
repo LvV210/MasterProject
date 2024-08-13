@@ -467,6 +467,7 @@ def extinction_and_error(Rh_, SigmaRh_, JHobs_, SigmaJHobs_, JH0_, SigmaJH0_):
     return Ah_value, Ah_error
 
 
+
 def luminosity_error_function():
     # Define the symbols
     BCh, mh, d, Ah, SigmaBCh, Sigmad, Sigmamh, SigmaAh = sp.symbols(
@@ -490,6 +491,8 @@ def luminosity_error_function():
         (partial_derivative_Ah* SigmaAh)**2)
 
     return error_L
+
+
 
 def luminosity_error(BCh_: float, SigmaBCh_: float, mh_: float, Sigmamh_: float, 
                      d_: float, Sigmad_: float, Ah_: float, SigmaAh_: float):
@@ -523,6 +526,7 @@ def luminosity_error(BCh_: float, SigmaBCh_: float, mh_: float, Sigmamh_: float,
     numerical_value_error_L = error_L_with_values.evalf()
 
     return numerical_value_error_L
+
 
 
 def luminosity_error_asymmetric(BCh_: float, SigmaBCh_: float, mh_: float, Sigmamh_: float, 
@@ -614,6 +618,8 @@ def expected_radius_error_asymmetric(L_, SigmaL_plus, SigmaL_minus, Teff_, Sigma
     R_error_minus = error_R_minus.subs(values).evalf()
 
     return R_value, R_error_plus, R_error_minus
+
+
 
 def expected_radius_error(L_, SigmaL_, Teff_, SigmaTeff_):
     # Define the symbols
@@ -730,9 +736,6 @@ def roche_lobe_radius_g(a_, Sigmaa_, M_, SigmaM_, R_, SigmaR_):
     RL_error = error_RL.subs(values).evalf()
 
     return RL_value, RL_error
-
-
-
 
 
 
